@@ -1,0 +1,484 @@
+select *
+from ondemand_order_metrics
+order by 1 desc;
+
+SELECT country_code,
+       company_name,
+       CASE WHEN on_demand_pricing_type = 'dynamic' THEN 'new' ELSE 'legacy' END AS type_of_partner,
+       COUNT(DISTINCT id),
+       AVG(rpo_margin)
+FROM ondemand_order_metrics
+WHERE date_format(order_creation_time, '%Y-%m-%d') >= '2023-01-01'
+  AND date_format(order_creation_time, '%Y-%m-%d') < '2023-02-01'
+  AND final_status = 'DeliveredStatus'
+  AND country_code IN ('ES', 'PT', 'IT', 'RO', 'GE', 'BG', 'NG')
+  AND on_demand_pricing_type = 'dynamic'
+GROUP BY 1, 2, 3
+ORDER BY 5;
+
+SELECT pricing_source,
+       COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE on_demand_pricing_type IS NULL
+  AND date_format(order_creation_time, '%Y-%m-%d') >= '2023-01-01'
+  AND date_format(order_creation_time, '%Y-%m-%d') < '2023-01-01'
+GROUP BY 1;
+
+SELECT DISTINCT final_status
+FROM ondemand_order_metrics;
+
+SELECT city_code,
+       COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE date_format(order_creation_time, '%Y-%m-%d') >= '2023-01-01'
+  AND date_format(order_creation_time, '%Y-%m-%d') < '2023-02-01'
+  AND country_code = 'ES'
+GROUP BY 1;
+
+SELECT customer_id,
+       COUNT(DISTINCT id),
+       AVG(rpo_margin),
+       MIN(order_creation_time)
+FROM ondemand_order_metrics
+WHERE order_creation_time >= '2023-01-01'
+  AND customer_id IN
+      (141699996, 143773934, 141708070, 142373985, 143697161, 135617158, 47717124, 142743111, 141135862, 142728558,
+       143543779, 143772972, 143508456, 143693456, 128592737, 29934999)
+GROUP BY 1;
+
+SELECT *
+FROM ondemand_order_metrics
+WHERE customer_id = 141135862;
+
+SELECT order_creation_time,
+       DATE_ADD(order_creation_time, INTERVAL 1 HOUR)       AS creation_time_local,
+       DATE(DATE_ADD(order_creation_time, INTERVAL 1 HOUR)) AS only_date,
+       TIME(DATE_ADD(order_creation_time, INTERVAL 1 HOUR)) AS only_time
+FROM ondemand_order_metrics
+WHERE id = 575952976;
+
+select id,
+       code,
+       tracking_number,
+       final_status,
+       cancel_undelivered,
+       customer_id,
+       client_name,
+       country_code,
+       city_code,
+       DATE(DATE_ADD(order_creation_time, INTERVAL 2 HOUR)) AS only_date,
+       TIME(DATE_ADD(order_creation_time, INTERVAL 2 HOUR)) AS only_time,
+       rpo_real_loc,
+       CoD_status,
+       CoD_price,
+       CoD_currency
+from ondemand_order_metrics
+where client_name REGEXP 'pizz.*hut'
+  AND country_code = 'RO'
+  and order_creation_time > '2023-03-01';
+
+select DISTINCT client_name
+from ondemand_order_metrics
+where client_name REGEXP 'pizz.*hut'
+  AND country_code = 'RO'
+  and order_creation_time > '2023-03-01';
+
+SELECT country_code,
+       client_name,
+       customer_id,
+       COUNT(DISTINCT CASE
+                          WHEN (order_creation_time >= '2023-03-01' AND order_creation_time < '2023-04-01') THEN id
+                          ELSE NULL END)
+from ondemand_order_metrics
+WHERE client_name IS NOT NULL
+GROUP BY 1, 2, 3
+ORDER BY 1, 2, 3, 4 DESC
+
+SELECT COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE 1 = 1
+  AND customer_id = 37578831
+  AND order_creation_time >= '2023-03-01'
+  AND order_creation_time < '2023-04-01';
+
+select id,
+       code,
+       tracking_number,
+       final_status,
+       cancel_undelivered,
+       customer_id,
+       client_name,
+       country_code,
+       city_code,
+       DATE(DATE_ADD(order_creation_time, INTERVAL 2 HOUR)) AS only_date,
+       TIME(DATE_ADD(order_creation_time, INTERVAL 2 HOUR)) AS only_time,
+       rpo_real_loc,
+       CoD_status,
+       CoD_price,
+       CoD_currency
+from ondemand_order_metrics
+where client_name REGEXP 'pizz.*hut'
+  AND country_code = 'RO'
+  and order_creation_time > '2023-03-01';
+
+SELECT oom.client_name,
+       date_format(order_creation_time, '%Y-%m'),
+       COUNT(DISTINCT oom.id)
+FROM (SELECT DISTINCT client_name
+      FROM ondemand_order_metrics
+      WHERE customer_id IN
+            (142731704, 47717124, 142728558, 143693456, 141242531, 141708070, 135617158, 58239307, 144815174, 139832235,
+             9487537, 141699996, 118399763, 141135862, 143543779, 140135176, 141308876, 140138945, 140881074, 119207837,
+             137797148, 137797267, 139434608, 140086110, 139336521, 138746678, 141040510, 142770151, 86592912,
+             144205565)
+        AND client_name IS NOT NULL) AS partners_table
+         JOIN ondemand_order_metrics oom ON partners_table.client_name = oom.client_name
+GROUP BY 1, 2
+
+
+SELECT client_name,
+       date_month,
+       total_orders,
+       ROW_NUMBER() OVER (PARTITION BY client_name oRDER BY date_month)
+FROM (SELECT oom.client_name,
+             date_format(order_creation_time, '%Y-%m') AS date_month,
+             COUNT(DISTINCT id)                        AS total_orders
+      FROM (SELECT client_name,
+                   date_format(order_creation_time, '%Y-%m'),
+                   COUNT(DISTINCT id) AS total_orders
+            FROM ondemand_order_metrics
+            WHERE client_name IS NOT NULL
+              AND country_code = 'ES'
+            GROUP BY 1, 2
+            HAVING total_orders > 99) AS partner_base
+               JOIN ondemand_order_metrics oom ON partner_base.client_name = oom.client_name
+      GROUP BY 1, 2) as final_table
+GROUP BY 1, 2
+
+SELECT oom.client_name,
+       TIMESTAMPDIFF(MONTH, first_order, order_creation_time) AS month_plus,
+       date_format(first_order, '%Y-%m') AS first_order_month,
+       COUNT(DISTINCT id)                                  AS total_orders
+FROM (SELECT client_name,
+             MIN(order_creation_time) as first_order
+      FROM ondemand_order_metrics
+      WHERE country_code = 'ES'
+      GROUP BY 1) AS first_order_table
+         JOIN ondemand_order_metrics oom ON first_order_table.client_name = oom.client_name
+AND country_code = 'ES'
+AND first_order >= '2022-01-01'
+AND first_order < '2023-04-01'
+AND order_creation_time < '2023-05-01'
+GROUP BY 1,2,3;
+
+SELECT DISTINCT customer_id
+FROM ondemand_order_metrics
+WHERE client_name = 'Papa Johns';
+
+SELECT client_name,
+       rpo_real_eur,
+       rpo_exp_eur,
+       order_creation_time
+FROM ondemand_order_metrics
+WHERE 1 = 1
+  AND rpo_real_eur >= 20
+  AND date_format(order_creation_time, '%Y-%m') = '2023-03';
+
+SELECT country_code,
+       city_tier,
+       km_tier,
+       COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE order_creation_time >= '2023-01-01'
+AND order_creation_time < '2023-05-01'
+AND city_tier IS NOT NULL
+AND country_code IN ('ES','PT','IT','GE','RO','BG')
+GROUP BY 1,2,3;
+
+SELECT COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE 1=1
+AND date_format(order_creation_time, '%Y-%m-%d') = '2023-05-02'
+AND country_code = 'ES'
+AND final_status = 'DeliveredStatus';
+
+SELECT client_name
+FROM ondemand_order_metrics
+WHERE customer_id = 134476114
+LIMIT;
+
+SELECT customer_id,
+       client_name,
+       country_code,
+       COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE 1=1
+AND order_creation_time >= '2023-01-01'
+AND order_creation_time < '2023-04-01'
+GROUP BY 1,2,3;
+
+SELECT id,
+       code,
+       city_code,
+       final_status,
+       km_tier,
+       client_name,
+       order_creation_time,
+       rpo_real_eur,
+       tracking_number
+FROM ondemand_order_metrics
+WHERE 1=1
+  AND order_creation_time >= '2023-04-16'
+  AND order_creation_time < '2023-05-16'
+AND customer_id = 116659495;
+
+SELECT *
+FROM ondemand_order_metrics
+WHERE 1=1
+  AND order_creation_time >= '2023-05-16'
+  AND order_creation_time < '2023-06-01'
+  AND country_code = 'IT';
+
+select id,
+       code,
+       tracking_number,
+       final_status,
+       customer_id,
+       client_code,
+       client_name,
+       entity_tags,
+       country_code,
+       city_code,
+       km_tier,
+       city_tier,
+       order_creation_time,
+       order_start_time,
+       order_delivery_time,
+       cancel_undelivered,
+       is_glovoapp_order,
+       is_glovo_access,
+       paid,
+       payment_method,
+       pricing_source,
+       on_demand_pricing_type,
+       default_price,
+       pricing_config_id,
+       config_issue,
+       config_coefficient,
+       cm1_cost_eur,
+       cpo_real_eur,
+       cpo_real_loc,
+       cpo_exp_eur,
+       cpo_exp_loc,
+       rpo_real_eur,
+       rpo_real_loc,
+       rpo_exp_eur,
+       rpo_exp_loc,
+       config_margin,
+       rpo_margin,
+       CASE
+           WHEN final_status = 'DeliveredStatus' AND cash_payment = 'YES' THEN 'PAID' ELSE CoD_Status END AS CoD_Status1,
+       CoD_price,
+       CoD_currency,
+       cash_payment,
+       is_refund_order,
+       refund_amount_eur,
+       refund_amount_loc,
+       refund_order_date,
+       is_free_order,
+       free_order_date,
+       company_email,
+       address_line1,
+       address_line2,
+       company_city,
+       company_country,
+       company_name,
+       tax_id,
+       courier_id,
+       pricing_last_update,
+       query_last_update,
+       invoicing_courier,
+       invoicing_partner,
+       is_remake,
+       original_remake_order
+from ondemand_order_metrics
+where country_code = 'GE'
+  AND order_creation_time >= '2023-05-01'
+  AND order_creation_time < '2023-06-01'
+  and is_glovo_access = 'NO'
+  and is_glovoapp_order = 'NO'
+;
+
+select
+    id,
+    code,
+    final_status,
+    customer_id,
+    client_name,
+    km_tier,
+    order_start_time,
+    payment_method,
+    rpo_real_loc,
+    CASE
+        WHEN final_status = 'DeliveredStatus' AND cash_payment = 'YES' THEN 'PAID' ELSE CoD_Status END AS CoD_Status,
+    CoD_price,
+    cash_payment,
+    address_line1,
+    company_name,
+    tax_id
+from ondemand_order_metrics
+where country_code = 'RO'
+  AND order_creation_time >= '2023-05-16'
+  AND order_creation_time < '2023-06-01'
+  and is_glovo_access = 'NO'
+  and is_glovoapp_order = 'NO';
+
+select
+    Id,
+    Code,
+    final_status,
+    customer_id,
+    client_name,
+    city_code,
+    concat(DATE(DATE_ADD(order_creation_time, INTERVAL 2 HOUR)),' ',TIME(DATE_ADD(order_creation_time, INTERVAL 2 HOUR))) AS order_creation_time,
+    concat(DATE(DATE_ADD(order_delivery_time, INTERVAL 2 HOUR)),' ',TIME(DATE_ADD(order_delivery_time, INTERVAL 2 HOUR))) AS order_delivery_time,
+    cancel_undelivered,
+    cpo_real_loc,
+    rpo_real_loc,
+    CASE
+        WHEN final_status = 'DeliveredStatus' AND cash_payment = 'YES' THEN 'PAID' ELSE CoD_Status END AS CoD_Status,
+    CoD_price,
+    CoD_currency,
+    cash_payment,
+    is_refund_order,
+    refund_amount_loc,
+    refund_order_date,
+    is_free_order,
+    company_email,
+    address_line1,
+    company_city,
+    company_name,
+    tax_id
+from ondemand_order_metrics
+where country_code = 'BG'
+  AND order_creation_time >= '2023-05-16'
+  AND order_creation_time < '2023-06-01'
+  and is_glovo_access = 'NO'
+  and is_glovoapp_order = 'NO';
+
+SELECT * from ondemand_order_metrics
+WHERE 1=1
+  AND order_creation_time >= '2023-05-01'
+  AND order_creation_time < '2023-06-01'
+  AND country_code = 'ES';
+
+SELECT COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE 1=1
+  AND order_creation_time >= '2023-05-01'
+  AND order_creation_time < '2023-06-01';
+
+select concat(right(year(order_creation_time),2),RIGHT(YEARWEEK(order_creation_time,1),2)) YYMM,
+       country_code,
+       customer_id,
+       client_name,
+       entity_tags,
+       count(*) qty_orders,
+       sum(rpo_real_eur) rpo_eur,
+       sum(cpo_real_eur) cpo_eur
+from ondemand_order_metrics
+where order_creation_time > '2023-01-01'
+  AND is_glovoapp_order IN ('NO')
+  AND is_glovo_access IN ('NO')
+group by 1,2,3,4,5;
+
+SELECT customer_id,
+       client_name,
+       MIN(order_creation_time) first_order,
+       COUNT(DISTINCT id)
+FROM ondemand_order_metrics
+WHERE 1=1
+AND customer_id IN (144381757,137797354, 144363729, 144815174, 144812119, 144861847, 146748775,146752185,146754849, 144861797,144862352, 144800162, 144787037, 144491712, 144541506, 144000949,144031030,142724617,144031467,144442583,144030837,144000385,144001193,144030968,144031118,144031192,144001547,144031261,144000718,144001404,144442532,144031409,144442568, 145096762, 145913396, 145163629,145129430, 145502795, 108652064, 137216987, 67050546, 120676416, 143420260, 114339523, 67050622, 121838330,121846997, 122455692, 115797835, 135954296, 140236226,139408178, 134994058, 128592737, 107901321,58309310,91332650, 130308571, 141982384, 83070285, 123142676,134363012,131936008, 128745174, 141297320, 115952640, 143013937, 145546256, 38456170, 76623410, 140997351,140997667,140997739,140998069,140998020,140997875, 145377378,145377641,145385241,145385308,145385355,145385389, 145427300, 145502326, 143735614, 145432291, 145488013, 11824042, 119154767, 127553692, 134476114,134479199,142376306,134476114, 124672473, 145768104, 145905635, 145904882, 145867849,145868012,145868090, 145849944, 145824107, 142984470,142982438,142984412,142982503,142982543, 143366494, 137694990, 146169122, 146230321, 146153529, 146197410, 143728012, 146114769, 146063588, 144796225, 145863284, 146063390, 145850110, 145096762, 137157419, 126293220, 146196705, 146166352, 146240801,146242339, 146189229, 146143229, 146462484, 146398558, 146383151, 145910566, 146554059, 146190787, 146573701, 146128391, 146473999,146474074,146474114,146473925, 146762267, 146480456, 146745338, 146801019,146800755,146800930, 146620198, 147094723)
+GROUP BY 1,2;
+
+SELECT customer_id, order_creation_time AS time_of_xth_order, order_count
+FROM (
+         SELECT customer_id, order_creation_time,
+                @row_number := IF(@prev_customer = customer_id, @row_number + 1, 1) AS order_count,
+                @prev_customer := customer_id
+         FROM ondemand_order_metrics, (SELECT @row_number := 0, @prev_customer := '') AS t
+         WHERE 1=1
+           AND customer_id IN (144381757,137797354, 144363729, 144815174, 144812119, 144861847, 146748775,146752185,146754849, 144861797,144862352, 144800162, 144787037, 144491712, 144541506, 144000949,144031030,142724617,144031467,144442583,144030837,144000385,144001193,144030968,144031118,144031192,144001547,144031261,144000718,144001404,144442532,144031409,144442568, 145096762, 145913396, 145163629,145129430, 145502795, 108652064, 137216987, 67050546, 120676416, 143420260, 114339523, 67050622, 121838330,121846997, 122455692, 115797835, 135954296, 140236226,139408178, 134994058, 128592737, 107901321,58309310,91332650, 130308571, 141982384, 83070285, 123142676,134363012,131936008, 128745174, 141297320, 115952640, 143013937, 145546256, 38456170, 76623410, 140997351,140997667,140997739,140998069,140998020,140997875, 145377378,145377641,145385241,145385308,145385355,145385389, 145427300, 145502326, 143735614, 145432291, 145488013, 11824042, 119154767, 127553692, 134476114,134479199,142376306,134476114, 124672473, 145768104, 145905635, 145904882, 145867849,145868012,145868090, 145849944, 145824107, 142984470,142982438,142984412,142982503,142982543, 143366494, 137694990, 146169122, 146230321, 146153529, 146197410, 143728012, 146114769, 146063588, 144796225, 145863284, 146063390, 145850110, 145096762, 137157419, 126293220, 146196705, 146166352, 146240801,146242339, 146189229, 146143229, 146462484, 146398558, 146383151, 145910566, 146554059, 146190787, 146573701, 146128391, 146473999,146474074,146474114,146473925, 146762267, 146480456, 146745338, 146801019,146800755,146800930, 146620198, 147094723)
+         ORDER BY customer_id, order_creation_time
+     ) AS subquery
+WHERE order_count IN (1,15,100);
+
+select id,
+       code,
+       tracking_number,
+       final_status,
+       customer_id,
+       client_code,
+       client_name,
+       entity_tags,
+       country_code,
+       city_code,
+       km_tier,
+       city_tier,
+       order_creation_time,
+       order_start_time,
+       order_delivery_time,
+       cancel_undelivered,
+       is_glovoapp_order,
+       is_glovo_access,
+       paid,
+       payment_method,
+       pricing_source,
+       on_demand_pricing_type,
+       default_price,
+       pricing_config_id,
+       config_issue,
+       config_coefficient,
+       cm1_cost_eur,
+       cpo_real_eur,
+       cpo_real_loc,
+       cpo_exp_eur,
+       cpo_exp_loc,
+       rpo_real_eur,
+       rpo_real_loc,
+       rpo_exp_eur,
+       rpo_exp_loc,
+       config_margin,
+       rpo_margin,
+       CASE
+           WHEN final_status = 'DeliveredStatus' AND cash_payment = 'YES' THEN 'PAID' ELSE CoD_Status END AS CoD_Status1,
+       CoD_price,
+       CoD_currency,
+       cash_payment,
+       is_refund_order,
+       refund_amount_eur,
+       refund_amount_loc,
+       refund_order_date,
+       is_free_order,
+       free_order_date,
+       company_email,
+       address_line1,
+       address_line2,
+       company_city,
+       company_country,
+       company_name,
+       tax_id,
+       courier_id,
+       pricing_last_update,
+       query_last_update,
+       invoicing_courier,
+       invoicing_partner,
+       is_remake,
+       original_remake_order
+from ondemand_order_metrics
+where country_code = 'RO'
+  AND order_creation_time >= '2023-05-16'
+  AND order_creation_time < '2023-06-01'
+  and is_glovo_access = 'NO'
+  and is_glovoapp_order = 'NO'
+;
