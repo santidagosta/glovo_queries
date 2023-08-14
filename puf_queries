@@ -1,0 +1,969 @@
+WITH first_orders_category_derived AS (SELECT orders.customer_id                AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              MIN(orders.creation_time)       AS "min_creation_time",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                       GROUP BY 1, 4),
+
+     sessions_table AS (SELECT customer_id,
+                               creation_time
+     FROM log_mp_session_start
+         WHERE customer_id IN (SELECT customer_id FROM first_orders_category_derived))
+
+SELECT first_orders_category_derived.country_code                                        AS "orders.country_code",
+       TO_CHAR(DATE_TRUNC('month', first_orders_category_derived.min_creation_time_local),
+               'YYYY-MM')                                                                AS "first_orders_category_derived.first_order_local_month",
+       CAST(DATEDIFF('MONTH', first_orders_category_derived.min_creation_time_local,
+                     st.creation_time) AS INT)                               AS "users.cohort_months_since_first_order_after_condition",
+       COUNT(DISTINCT CASE WHEN "users.cohort_months_since_first_order_after_condition" = 0
+           THEN first_orders_category_derived.customer_id ELSE st.customer_id END)                                                AS "orders.number_of_active_users"
+FROM first_orders_category_derived
+        LEFT JOIN sessions_table ST ON first_orders_category_derived.customer_id = st.customer_id
+WHERE first_orders_category_derived.country_code NOT IN('BR','CL', 'EG', 'PR', 'TR', 'UY')
+  AND st.creation_time < '2020-07-01'
+  AND ((CAST(DATEDIFF('MONTH', first_orders_category_derived.min_creation_time_local,
+                      st.creation_time) AS INT) IN (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)))
+  AND ((first_orders_category_derived.min_creation_time_local) >= ((DATEADD(month, -19, DATE_TRUNC('month', DATE_TRUNC('day', GETDATE()))))) AND (first_orders_category_derived.min_creation_time_local) < ((DATEADD(month, 20, DATEADD(month, -19, DATE_TRUNC('month', DATE_TRUNC('day', GETDATE())))))))
+GROUP BY 1, DATE_TRUNC('month', first_orders_category_derived.min_creation_time_local), 3
+ORDER BY 1, 2, 3;
+
+--Deep dive PMF
+WITH first_orders_category_derived AS (SELECT orders.customer_id                AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              MIN(orders.creation_time)       AS "min_creation_time",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                       GROUP BY 1, 4),
+
+     sessions_table AS (SELECT lmss.customer_id,
+                               creation_time
+                        FROM log_mp_session_start lmss
+                                 JOIN first_orders_category_derived focd
+                                      ON lmss.customer_id = focd.customer_id
+                        WHERE min_creation_time_local BETWEEN '2020-03-01 00:00:00.000000' AND '2020-04-01 00:00:00.000000'
+                          AND creation_time BETWEEN '2020-04-01 00:00:00.000000' AND '2020-05-01 00:00:00.000000'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND creation_time_local BETWEEN '2020-04-01 00:00:00.000000' AND '2020-05-01 00:00:00.000000'
+                        AND min_creation_time_local BETWEEN '2020-03-01 00:00:00.000000' AND '2020-04-01 00:00:00.000000')
+
+SELECT COUNT (DISTINCT customer_id)
+FROM log_mp_screen_view_home
+WHERE creation_time BETWEEN '2020-04-01 00:00:00.000000' AND '2020-05-01 00:00:00.000000'
+AND customer_id IN (SELECT customer_id FROM sessions_table)
+AND customer_id NOT IN (SELECT customer_id FROM orders_table);
+
+--Deep dive PMF v.2
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              MIN(orders.creation_time)       AS "min_creation_time",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                       GROUP BY 1, 4),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND creation_time_local BETWEEN '2020-04-01 00:00:00.000000' AND '2020-05-01 00:00:00.000000'
+                        AND min_creation_time_local BETWEEN '2020-03-01 00:00:00.000000' AND '2020-04-01 00:00:00.000000')
+
+SELECT COUNT(DISTINCT lmp.customer_id) AS customers_wo_orders
+FROM log_mp_checkout_started lmp
+         JOIN first_orders_category_derived focd
+              ON lmp.customer_id = focd.customer_id
+WHERE creation_time BETWEEN '2020-04-01 00:00:00.000000' AND '2020-05-01 00:00:00.000000'
+  AND min_creation_time_local BETWEEN '2020-03-01 00:00:00.000000' AND '2020-04-01 00:00:00.000000'
+  AND lmp.customer_id NOT IN (SELECT customer_id FROM orders_table);
+
+--Deep dive PMF v.3
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-03'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-04'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-03')
+
+SELECT COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_category,
+       COUNT(DISTINCT CASE
+                          WHEN lmp2.creation_time IS NOT NULL
+                                   AND lmp2.creation_time < lmp3.creation_time THEN lmp3.customer_id
+                          ELSE NULL END)                             AS total_wall_viewers,
+       COUNT(DISTINCT CASE
+                          WHEN lmp2.creation_time IS NOT NULL
+                                   AND lmp3.creation_time IS NOT NULL
+                                           AND lmp3.creation_time < lmp4.creation_time THEN lmp4.customer_id
+                          ELSE NULL END)                             AS total_store_from_wall,
+       COUNT(DISTINCT CASE
+                          WHEN lmp2.creation_time IS NOT NULL
+                                           AND lmp4.creation_time < lmp5.creation_time THEN lmp5.customer_id
+                          ELSE NULL END)                             AS total_checkout
+FROM log_mp_session_start lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+    LEFT JOIN log_mp_category_opened lmp2 ON lmp1.session_id = lmp2.session_id
+         LEFT JOIN log_mp_screen_view_stores lmp3 ON lmp1.session_id = lmp3.session_id
+         LEFT JOIN log_mp_screen_view_store lmp4 ON lmp1.session_id = lmp4.session_id
+         LEFT JOIN log_mp_checkout_started lmp5 ON lmp1.session_id = lmp5.session_id
+WHERE TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-04'
+AND lmp1.customer_id NOT IN (SELECT * FROM orders_table);
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-03'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-04'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-03')
+
+SELECT country_code,
+       COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_oc
+FROM log_mp_session_start lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+LEFT JOIN log_mp_order_cancelled lmp2 on lmp1.session_id = lmp2.session_id
+WHERE TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-04'
+AND lmp1.customer_id NOT IN (SELECT * FROM orders_table)
+GROUP BY 1
+ORDER BY 1;
+
+SELECT DISTINCT category_name
+FROM log_mp_category_opened;
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-03'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-04'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-03')
+
+SELECT COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_atc,
+       COUNT (DISTINCT lmp3.customer_id) AS total_checkout
+FROM log_mp_session_start lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+    LEFT JOIN log_mp_ecommerce_addtocart lmp2 ON lmp1.session_id = lmp2.session_id
+         LEFT JOIN log_mp_checkout_started lmp3 ON lmp1.session_id = lmp3.session_id
+WHERE TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-04'
+AND lmp1.customer_id NOT IN (SELECT * FROM orders_table);
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-03'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-04'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-03')
+
+SELECT COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_category,
+       COUNT(DISTINCT CASE
+                          WHEN lmp2.creation_time IS NOT NULL
+                                   AND lmp2.creation_time < lmp3.creation_time THEN lmp3.customer_id
+                          ELSE NULL END)                             AS total_atc,
+       COUNT(DISTINCT CASE
+                          WHEN lmp2.creation_time IS NOT NULL
+                                   AND lmp3.creation_time IS NOT NULL
+                                           AND lmp3.creation_time < lmp4.creation_time THEN lmp4.customer_id
+                          ELSE NULL END)                             AS total_checkout
+FROM log_mp_session_start lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+    LEFT JOIN log_mp_category_opened lmp2 ON lmp1.session_id = lmp2.session_id
+         LEFT JOIN log_mp_ecommerce_addtocart lmp3 ON lmp1.session_id = lmp3.session_id
+         LEFT JOIN log_mp_checkout_started lmp4 ON lmp1.session_id = lmp4.session_id
+WHERE TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-04'
+AND lmp1.customer_id NOT IN (SELECT * FROM orders_table);
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-06'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-07'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-06')
+
+SELECT country_code,
+       COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_home,
+       COUNT (DISTINCT lmp3.customer_id) AS total_store,
+       COUNT (DISTINCT lmp4.customer_id) AS total_atc
+FROM log_mp_session_start lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+LEFT JOIN log_mp_screen_view_home lmp2 on lmp1.session_id = lmp2.session_id
+LEFT JOIN log_mp_screen_view_store lmp3 on lmp1.session_id = lmp3.session_id
+LEFT JOIN log_mp_ecommerce_addtocart lmp4 on lmp1.session_id = lmp4.session_id
+WHERE TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-07'
+AND lmp1.customer_id NOT IN (SELECT * FROM orders_table)
+GROUP BY 1
+ORDER BY 1;
+
+SELECT country_code,
+       store_ranking,
+       store_name,
+       customers_reaching_ATC
+FROM (WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                                    MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                                    orders.country_code
+
+                                             FROM public.orders
+                                                      LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                             WHERE public.orders.final_status = 'DeliveredStatus'
+                                               AND orders.first_order
+                                             GROUP BY 1, 3
+                                             HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                                    '2020-06'),
+
+           orders_table AS (SELECT o.customer_id
+                            FROM orders o
+                                     JOIN first_orders_category_derived focd
+                                          ON o.customer_id = focd.customer_id
+                            WHERE final_status = 'DeliveredStatus'
+                              AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-07'
+                              AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-06')
+
+      SELECT country_code,
+             store_name,
+             COUNT(DISTINCT lmp1.customer_id)                                                  AS customers_reaching_ATC,
+             RANK() OVER (PARTITION BY country_code ORDER BY customers_reaching_ATC DESC) AS store_ranking
+      FROM log_mp_ecommerce_addtocart lmp1
+               JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+               JOIN stores s ON lmp1.store_id = s.id
+      WHERE lmp1.customer_id NOT IN (SELECT * FROM orders_table)
+        AND TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-07'
+      GROUP BY 1, 2
+      ORDER BY 1, 4) sbt
+WHERE store_ranking < 11
+ORDER BY 1, 2;
+
+SELECT country_code,
+       store_ranking,
+       store_name,
+       customers_reaching_store
+FROM (WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                                    MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                                    orders.country_code
+
+                                             FROM public.orders
+                                                      LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                             WHERE public.orders.final_status = 'DeliveredStatus'
+                                               AND orders.first_order
+                                             GROUP BY 1, 3
+                                             HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                                    '2020-06'),
+
+           orders_table AS (SELECT o.customer_id
+                            FROM orders o
+                                     JOIN first_orders_category_derived focd
+                                          ON o.customer_id = focd.customer_id
+                            WHERE final_status = 'DeliveredStatus'
+                              AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-07'
+                              AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-06')
+
+      SELECT country_code,
+             store_name,
+             COUNT(DISTINCT lmp1.customer_id)                                                    AS customers_reaching_store,
+             RANK() OVER (PARTITION BY country_code ORDER BY customers_reaching_store DESC) AS store_ranking
+      FROM log_mp_screen_view_store lmp1
+               JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+      WHERE lmp1.customer_id NOT IN (SELECT * FROM orders_table)
+        AND TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-07'
+      GROUP BY 1, 2
+      ORDER BY 1, 4) sbt
+WHERE store_ranking < 11
+ORDER BY 1, 2;
+
+SELECT * FROM stores
+ORDER BY random()
+LIMIT 10
+
+SELECT * FROM minimum_basket_tiers
+ORDER BY random()
+LIMIT 10
+
+SELECT store_address_id FROM orders
+WHERE mcd_partner
+AND country_code = 'ES'
+ORDER BY creation_time_local DESC
+LIMIT 10;
+
+SELECT * FROM store_addresses
+WHERE id = 15547
+
+SELECT * FROM stores
+WHERE id = 9487;
+
+SELECT * FROM minimum_basket_tiers
+WHERE minimum_basket_id = 103944843;
+
+SELECT * FROM log_mp_checkout_started
+ORDER BY random()
+LIMIT 10;
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         AND country_code = 'ES'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-07'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-08'),
+
+     total_atc AS (SELECT lmea.customer_id,
+                          session_id,
+                          total_amount,
+                          SUM(total_amount) OVER (PARTITION BY lmea.customer_id, session_id) AS EUR_pre_order
+                   FROM log_mp_ecommerce_addtocart lmea
+                            JOIN first_orders_category_derived focd ON lmea.customer_id = focd.customer_id
+                   WHERE lmea.customer_id NOT IN (SELECT * FROM orders_table)
+                     AND store_id IN (SELECT id FROM stores WHERE store_name ILIKE '%KFC%')
+                     AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08'
+                   GROUP BY 1, 2, 3)
+
+SELECT COUNT(DISTINCT ta.customer_id)                                        AS total_customers,
+       COUNT(DISTINCT
+             CASE WHEN EUR_pre_order < 10 THEN ta.customer_id ELSE NULL END) AS customers_below_MBS,
+       COUNT(DISTINCT CASE
+                          WHEN EUR_pre_order < 10 AND lmcs.customer_id IS NOT NULL THEN ta.customer_id
+                          ELSE NULL END)                                     AS customers_below_aware_MBS,
+       COUNT(DISTINCT lmcs.customer_id) AS customers_with_checkout
+FROM total_atc ta
+         LEFT JOIN log_mp_checkout_started lmcs ON ta.session_id = lmcs.session_id
+WHERE (lmcs.store_id IN (SELECT id FROM stores WHERE lmcs.store_name ILIKE '%KFC%') OR lmcs.store_id IS NULL);
+
+
+SELECT total_sessions,
+       COUNT(DISTINCT customer_id)
+FROM
+(WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         AND country_code = 'ES'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-07'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08')
+
+SELECT lmsvs.customer_id,
+       COUNT (DISTINCT session_id) total_sessions
+FROM log_mp_screen_view_store lmsvs
+         JOIN first_orders_category_derived focd ON lmsvs.customer_id = focd.customer_id
+WHERE lmsvs.customer_id NOT IN (SELECT * FROM orders_table)
+  AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08'
+GROUP BY 1) sbt1
+GROUP BY 1;
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         AND country_code = 'ES'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-07'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-08')
+
+SELECT COUNT (DISTINCT lmea.customer_id) total_customers_atc,
+       COUNT (DISTINCT CASE WHEN minimum_basket_id IS NOT NULL THEN lmea.customer_id ELSE NULL END) AS total_customer_atc_with_MBS,
+       COUNT (DISTINCT CASE WHEN minimum_basket_id IS NOT NULL THEN lmcs.customer_id ELSE NULL END) AS total_customer_co_with_MBS,
+       COUNT (DISTINCT CASE WHEN minimum_basket_id IS NULL THEN lmea.customer_id ELSE NULL END) AS total_customer_atc_without_MBS,
+       COUNT (DISTINCT CASE WHEN minimum_basket_id IS NULL THEN lmcs.customer_id ELSE NULL END) AS total_customer_co_without_MBS
+FROM log_mp_ecommerce_addtocart lmea
+         JOIN first_orders_category_derived focd ON lmea.customer_id = focd.customer_id
+LEFT JOIN log_mp_checkout_started lmcs ON lmea.session_id = lmcs.session_id AND lmea.store_id = lmcs.store_id
+LEFT JOIN stores s ON lmea.store_id = s.id
+WHERE lmea.customer_id NOT IN (SELECT * FROM orders_table)
+  AND TO_CHAR(DATE_TRUNC('month', lmea.creation_time), 'YYYY-MM') = '2020-08';
+
+SELECT total_sessions / total_orders AS sessions_per_order,
+       COUNT(DISTINCT customer_id)
+FROM (WITH first_orders_category_derived AS (SELECT orders.customer_id        AS "customer_id",
+                                                    MIN(orders.creation_time) AS "min_creation_time_local",
+                                                    orders.country_code
+
+                                             FROM public.orders
+                                                      LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                             WHERE public.orders.final_status = 'DeliveredStatus'
+                                               AND orders.first_order
+                                               AND country_code = 'ES'
+                                             GROUP BY 1, 3
+                                             HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                                    '2020-07'),
+
+           orders_table AS (SELECT o.customer_id,
+                                   o.id
+                            FROM orders o
+                                     JOIN first_orders_category_derived focd
+                                          ON o.customer_id = focd.customer_id
+                            WHERE final_status = 'DeliveredStatus'
+                              AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08')
+
+      SELECT lmsvs.customer_id,
+             COUNT(DISTINCT session_id) AS total_sessions,
+             COUNT(DISTINCT ot.id)      AS total_orders
+      FROM log_mp_screen_view_store lmsvs
+               JOIN orders_table ot ON lmsvs.customer_id = ot.customer_id
+      WHERE TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08'
+      GROUP BY 1) sbt1
+GROUP BY 1;
+
+SELECT avg_days_between_sessions,
+       COUNT(DISTINCT customer_id)
+FROM (SELECT customer_id,
+             AVG(DATEDIFF('day', previous_session, current_session)) AS avg_days_between_sessions
+      FROM (SELECT avg_days_between_sessions,
+       COUNT(DISTINCT customer_id)
+FROM (SELECT customer_id,
+             AVG(DATEDIFF('day', previous_session, current_session)) AS avg_days_between_sessions
+      FROM (WITH first_orders_category_derived AS (SELECT orders.customer_id        AS "customer_id",
+                                                          MIN(orders.creation_time) AS "min_creation_time_local",
+                                                          orders.country_code
+
+                                                   FROM public.orders
+                                                            LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                                   WHERE public.orders.final_status = 'DeliveredStatus'
+                                                     AND orders.first_order
+                                                     AND country_code = 'ES'
+                                                   GROUP BY 1, 3
+                                                   HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                                          '2020-07'),
+
+                 orders_table AS (SELECT o.customer_id
+                                  FROM orders o
+                                           JOIN first_orders_category_derived focd
+                                                ON o.customer_id = focd.customer_id
+                                  WHERE final_status = 'DeliveredStatus'
+                                    AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08')
+
+            SELECT lmsvs.customer_id,
+                   lmsvs.session_id,
+                   lmsvs.creation_time                                                             AS current_session,
+                   LAG(creation_time) OVER (PARTITION BY lmsvs.customer_id ORDER BY creation_time) AS previous_session
+            FROM log_mp_screen_view_store lmsvs
+                     JOIN first_orders_category_derived focd ON lmsvs.customer_id = focd.customer_id
+            WHERE lmsvs.customer_id NOT IN (SELECT * FROM orders_table)
+              AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08'
+            GROUP BY 1,2,3) sbt1
+      WHERE previous_session IS NOT NULL
+      GROUP BY 1) sbt2
+GROUP BY 1;WITH first_orders_category_derived AS (SELECT orders.customer_id        AS "customer_id",
+                                                          MIN(orders.creation_time) AS "min_creation_time_local",
+                                                          orders.country_code
+
+                                                   FROM public.orders
+                                                            LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                                   WHERE public.orders.final_status = 'DeliveredStatus'
+                                                     AND orders.first_order
+                                                     AND country_code = 'ES'
+                                                   GROUP BY 1, 3
+                                                   HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                                          '2020-07'),
+
+                 orders_table AS (SELECT o.customer_id
+                                  FROM orders o
+                                           JOIN first_orders_category_derived focd
+                                                ON o.customer_id = focd.customer_id
+                                  WHERE final_status = 'DeliveredStatus'
+                                    AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08')
+
+            SELECT lmsvs.customer_id,
+                   lmsvs.session_id,
+                   lmsvs.creation_time                                                             AS current_session,
+                   LAG(creation_time) OVER (PARTITION BY lmsvs.customer_id ORDER BY creation_time) AS previous_session
+            FROM log_mp_screen_view_store lmsvs
+                     JOIN first_orders_category_derived focd ON lmsvs.customer_id = focd.customer_id
+            WHERE lmsvs.customer_id NOT IN (SELECT * FROM orders_table)
+              AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08'
+            GROUP BY 1,2,3) sbt1
+      WHERE previous_session IS NOT NULL
+      GROUP BY 1) sbt2
+GROUP BY 1;
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id        AS "customer_id",
+                                              MIN(orders.creation_time) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         AND country_code = 'ES'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-07'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08')
+
+SELECT DATE_PART('dow', lmsvs.creation_time) AS day_of_week,
+       COUNT(DISTINCT lmsvs.session_id) AS total_sessions
+FROM log_mp_screen_view_store lmsvs
+         JOIN first_orders_category_derived focd ON lmsvs.customer_id = focd.customer_id
+WHERE lmsvs.customer_id NOT IN (SELECT * FROM orders_table)
+  AND TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-08'
+GROUP BY 1;
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id                AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              MIN(orders.creation_time)       AS "min_creation_time",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                       GROUP BY 1, 4),
+
+     sessions_table AS (SELECT customer_id,
+                               creation_time
+     FROM log_mp_session_start
+         WHERE customer_id IN (SELECT customer_id FROM first_orders_category_derived))
+
+SELECT first_orders_category_derived.country_code                                        AS "orders.country_code",
+       TO_CHAR(DATE_TRUNC('month', first_orders_category_derived.min_creation_time_local),
+               'YYYY-MM')                                                                AS "first_orders_category_derived.first_order_local_month",
+       CAST(DATEDIFF('MONTH', first_orders_category_derived.min_creation_time_local,
+                     st.creation_time) AS INT)                               AS "users.cohort_months_since_first_order_after_condition",
+       COUNT(DISTINCT CASE WHEN "users.cohort_months_since_first_order_after_condition" = 0
+           THEN first_orders_category_derived.customer_id ELSE st.customer_id END)                                                AS "orders.number_of_active_users"
+FROM first_orders_category_derived
+        LEFT JOIN sessions_table ST ON first_orders_category_derived.customer_id = st.customer_id
+WHERE first_orders_category_derived.country_code NOT IN('BR','CL', 'EG', 'PR', 'TR', 'UY')
+  AND st.creation_time < '2020-12-01'
+  AND ((CAST(DATEDIFF('MONTH', first_orders_category_derived.min_creation_time_local,
+                      st.creation_time) AS INT) IN (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15)))
+  AND ((first_orders_category_derived.min_creation_time_local) >= ((DATEADD(month, -19, DATE_TRUNC('month', DATE_TRUNC('day', GETDATE()))))) AND (first_orders_category_derived.min_creation_time_local) < ((DATEADD(month, 20, DATEADD(month, -19, DATE_TRUNC('month', DATE_TRUNC('day', GETDATE())))))))
+GROUP BY 1, DATE_TRUNC('month', first_orders_category_derived.min_creation_time_local), 3
+ORDER BY 1, 2, 3;
+
+WITH first_orders_category_derived AS (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-05'),
+
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-06'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-05')
+
+SELECT country_code,
+       COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_home,
+       COUNT (DISTINCT lmp3.customer_id) AS total_store,
+       COUNT (DISTINCT lmp4.customer_id) AS total_atc
+FROM log_mp_session_start lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+LEFT JOIN log_mp_screen_view_home lmp2 on lmp1.session_id = lmp2.session_id
+LEFT JOIN log_mp_screen_view_store lmp3 on lmp1.session_id = lmp3.session_id
+LEFT JOIN log_mp_ecommerce_addtocart lmp4 on lmp1.session_id = lmp4.session_id
+WHERE TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-06'
+AND lmp1.customer_id NOT IN (SELECT * FROM orders_table)
+GROUP BY 1
+ORDER BY 1;
+
+WITH first_orders_category_derived AS
+    (SELECT orders.customer_id              AS "customer_id",
+                                              MIN(orders.creation_time_local) AS "min_creation_time_local",
+                                              orders.country_code
+                                       FROM public.orders
+                                                LEFT JOIN public.users ON public.orders.customer_id = public.users.id
+                                       WHERE public.orders.final_status = 'DeliveredStatus'
+                                         AND orders.first_order
+                                         --AND country_code = 'PT'
+                                       GROUP BY 1, 3
+                                       HAVING TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') =
+                                              '2020-10'),
+     orders_table AS (SELECT o.customer_id
+                      FROM orders o
+                               JOIN first_orders_category_derived focd
+                                    ON o.customer_id = focd.customer_id
+                      WHERE final_status = 'DeliveredStatus'
+                        AND TO_CHAR(DATE_TRUNC('month', creation_time_local), 'YYYY-MM') = '2020-11'
+                        AND TO_CHAR(DATE_TRUNC('month', min_creation_time_local), 'YYYY-MM') = '2020-10'),
+dsi_user as (
+SELECT
+       lower(platform) as platform,
+       customer_id,
+  --     json_extract_path_text(custom_attributes_json, 'dynamicSessionId') as dsi,
+       count(1)
+FROM log_mparticle_events
+WHERE TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-11'
+    AND event_name = 'Dynamic Session Started'
+GROUP BY 1,2--,3
+),
+home as (
+SELECT
+     --  lower(platform) as platform,
+       customer_id,
+     --  json_extract_path_text(custom_attributes_json, 'dynamicSessionId') as dsi,
+       count(1)
+FROM log_mparticle_events
+WHERE TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-11'
+    AND event_name = 'Home Content Shown'
+GROUP BY 1--,2--,3
+),
+add_to_cart as (
+SELECT
+   --    lower(platform) as platform,
+       customer_id,
+      -- json_extract_path_text(custom_attributes_json, 'dynamicSessionId') as dsi,
+       count(1)
+FROM log_mparticle_events
+WHERE TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-11'
+    AND event_name = 'eCommerce - AddToCart'
+GROUP BY 1--,2--,3
+),
+store as (
+SELECT
+       --lower(platform) as platform,
+       customer_id,
+    --   json_extract_path_text(custom_attributes_json, 'dynamicSessionId') as dsi,
+       count(1)
+FROM log_mparticle_events
+WHERE TO_CHAR(DATE_TRUNC('month', creation_time), 'YYYY-MM') = '2020-11'
+    AND screen_name = 'Store'
+GROUP BY 1--,2--,3
+)
+SELECT lmp1.platform,
+       COUNT (DISTINCT lmp1.customer_id) AS total_sessions,
+       COUNT (DISTINCT lmp2.customer_id) AS total_home,
+       COUNT (DISTINCT lmp3.customer_id) AS total_store,
+       COUNT (DISTINCT lmp4.customer_id) AS total_atc
+FROM dsi_user lmp1
+    JOIN first_orders_category_derived focd ON lmp1.customer_id = focd.customer_id
+LEFT JOIN home lmp2 on lmp1.customer_id = lmp2.customer_id
+LEFT JOIN store lmp3 on lmp1.customer_id = lmp3.customer_id
+LEFT JOIN add_to_cart lmp4 on lmp1.customer_id = lmp4.customer_id
+WHERE --TO_CHAR(DATE_TRUNC('month', lmp1.creation_time), 'YYYY-MM') = '2020-11'
+--AND
+  lmp1.customer_id NOT IN (SELECT * FROM orders_table)
+GROUP BY 1
+ORDER BY 1;
+
+WITH elog_stores AS (SELECT
+    city_code
+FROM stores
+WHERE category='ELOGISTICS'
+GROUP BY 1)
+
+SELECT
+geo.country_code as country_code,
+geo.code as city_code,
+CASE WHEN es.city_code IS NOT NULL THEN TRUE ELSE FALSE END as elog_store_activated
+FROM geography geo
+LEFT JOIN elog_stores es ON geo.code = es.city_code
+WHERE geo.country_code IN ('IT','ES','RO','BG','GE','PT','NG')
+GROUP BY 1,2,3
+ORDER BY 1,2;
+
+with cte_parcel_state as (
+    select
+        parcel_states_tracking_number
+         , parcel_states_shipping_service_type
+    from bi_kpis.kpi_parcels_state
+    where (parcel_states_shipping_service_type is null or parcel_states_shipping_service_type='EXPRESS')
+      and parcel_states_created_at >= '2022-11-01'
+      and parcel_states_created_at < '2022-12-01'
+),
+     cte_courier_delivery as (
+         select distinct
+             order_id
+                       , package_partner_reference_code
+                       , package_status
+                       -- combined two CTE's for better performance
+                       , package_delivered_waiting_time
+                       , last_value(package_undelivered_reason ignore nulls) over (
+             partition by order_id
+             order by point_id
+             ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+             ) as undelivered_reason
+         from bi_kpis.kpi_courier_delivery_packages
+         where package_created_at >= '2022-11-01'
+           and package_created_at < '2022-12-01'
+           and package_partner_reference_code in (
+             select parcel_states_tracking_number from cte_parcel_state)
+     ),
+     cte_orders as (
+         select
+             kso.order_id
+              , kso.order_country_code
+              , kso.order_code
+              , kso.order_city_code
+              , kso.customer_id
+              , kso.order_is_bundled
+              , kso.order_source
+              , kso.order_payment_method
+              , kso.order_payment_status
+              , kso.order_final_status
+              , kso.order_started_local_at
+              , kso.order_activated_local_at
+              , kso.order_last_assigned_local_at
+              , kso.order_picked_up_local_at
+              , kso.order_delivered_local_at
+              , kso.order_canceled_local_at
+              , kso.order_description
+              , kso.order_cancel_reason
+              , dp.undelivered_reason
+              , dp.package_status
+              , dp.package_delivered_waiting_time
+              , kso.order_total_cost_currlocal
+              , kso.order_total_delivery_revenue_without_tax_currlocal
+              , kso.order_number_of_points
+              , kso.order_fd_pickup_to_final_delivery_km
+              , kso.order_fd_courier_to_pickup_km
+              , case
+                    when kso.customer_id in (select user_id
+                                             from tagged_users
+                                             where entity_tags like '%GlovoAccess%') then 'YES' else 'NO' end as ga_order_flag
+              , case when kso.order_fd_pickup_to_final_delivery_km isnull or kso.order_number_of_points > 2
+                         then 1 end as fd_calc_flag
+              , case when dp.package_status IN ('RETURNED','UNDELIVERED') OR (kso.order_final_status = 'CanceledStatus') then 1 else 0 end as is_undelivered
+         FROM bi_kpis.kpi_supply_ops kso
+                  LEFT JOIN cte_courier_delivery dp
+                            ON kso.order_id = dp.order_id
+                  LEFT JOIN cte_parcel_state p
+                            ON p.parcel_states_tracking_number = dp.package_partner_reference_code
+                  LEFT JOIN bi_kpis.dim_crossdocking_partners c
+                            ON c.client_id = kso.customer_id
+         WHERE 1 = 1
+           AND kso.order_source IN ('B2B','b2b-api','b2b')
+           and kso.order_started_local_at >= '2022-12-01'
+           and kso.order_started_local_at < '2023-01-01'
+           and kso.order_source in ('B2B-EXP', 'B2B', 'b2b-api', 'b2b')
+           and kso.order_subtype in ('CROSS_DOCKING', 'SHIPMENT')
+           AND kso.order_category in ('QUIERO', 'COURIER')
+           AND kso.order_vertical in ('Food', 'LaaS')
+           AND kso.order_is_marketplace = 0
+           AND kso.order_is_deleted = 0
+           AND kso.order_is_b2b = 1
+           and kso.customer_id not in (select id from private_customer.private_customers where email LIKE '%glovoapp.com')
+           and kso.customer_id not in (select user_id from tagged_users where entity_tags like '%glovoapp.com')
+           -- and NOT (kso.order_subtype = 'CROSS_DOCKING' AND p.parcel_states_shipping_service_type <> 'EXPRESS')
+           and (p.parcel_states_shipping_service_type is null or p.parcel_states_shipping_service_type = 'EXPRESS')
+     ),
+     cte_point_distances as (
+         select
+             order_id
+              , point_index
+              , point_type
+              , point_creation_time
+              , waiting_time
+              , address_id
+              , longitude
+              , latitude
+              , ST_DISTANCESPHERE(
+                 ST_POINT(longitude,latitude),
+                 ST_POINT(
+                                 lead(longitude, 1) over (partition by order_id order by point_index),
+                                 lead(latitude, 1) over (partition by order_id order by point_index)
+                     )
+             )::float as fd_to_next_point
+         from public.order_points
+         where point_creation_time >= '2022-11-01'
+           and point_creation_time < '2022-12-01'
+           and order_id in (select order_id from cte_orders)
+     ),
+     cte_delivery as (
+         select
+             order_id
+              , address_id
+              , longitude
+              , latitude
+              , point_index
+              , rank() over (partition by order_id order by point_index) as dp_rnk
+              , rank() over (partition by order_id order by point_index desc) as dp_rnk_desc
+         from cte_point_distances
+         where point_type= 'DELIVERY'
+           and address_id in (select id from private_customer.addresses)
+     ),
+     cte_addresses as (
+         select
+             id
+              , label
+              , contact_phone
+              , instructions
+              , details
+         from private_customer.addresses
+         where id in (select address_id from cte_point_distances)
+     ),
+     cte_tagged_users as (
+         select
+             pc.id as customer_id
+              , pc.name
+              , entity_tags
+         from tagged_users tu
+                  join private_customer.private_customers pc
+                       ON tu.user_id = pc.id
+         where 0=0
+           and tu.entity_tags like '%LaaS_Express%'
+     )
+select
+    (case
+         when adp.contact_phone like '%910780961%' then 'yes'
+         when adp.contact_phone like '%3,491,078,096,1%' then 'yes'
+         when adp.contact_phone like '%910 78 09 61%' then 'yes'
+         when adp.contact_phone like '%34,910,381,154%' then 'yes'
+         when adp.contact_phone like '%910 38 11 54%' then 'yes'
+         when adp.contact_phone like '%910381154%' then 'yes'
+         when adp.instructions like '%910381154%' then 'yes'
+         when adp.instructions like '%910780961%' then 'yes'
+         when adp.details like '%910780961%' then 'yes'
+         when adp.details like '%910381154%' then 'yes'
+         else 'no' end)                                                      as other_delivery_provider
+     , count(distinct kpi.order_id)                                          as total_orderls
+from cte_orders kpi
+         left join cte_tagged_users ctu on kpi.customer_id = ctu.customer_id
+         left join cte_delivery dp on dp.order_id=kpi.order_id and dp.dp_rnk=1
+         left join cte_addresses adp on dp.address_id = adp.id and dp.dp_rnk=1
+where 0 = 0
+group by 1
+;
