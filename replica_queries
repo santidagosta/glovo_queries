@@ -1,0 +1,1180 @@
+SELECT DATE_FORMAT(admission_date, '%Y-%M'),
+       COUNT(DISTINCT parcel_id)
+FROM (SELECT parcel_id,
+             tracking_number,
+             package_id,
+             MIN(changed_at) AS admission_date
+      FROM parcel_state_changes ps
+               LEFT JOIN parcels p ON p.id = ps.parcel_id
+      WHERE action = 'PICKER'
+      GROUP BY 1,
+               2,
+               3
+      HAVING admission_date > '2021-01-16 00:00:00.000000') sbt
+GROUP BY 1;
+
+SELECT *
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE p.tracking_number = 'GVALEBCN000000275830'
+ORDER BY changed_at;
+
+SELECT *
+FROM parcels
+LIMIT 10;
+
+SELECT package_id,
+       weight
+FROM parcels
+WHERE creation_time BETWEEN '2021-07-20 00:00:00.000000' AND '2021-09-07 00:00:00.000000'
+  AND package_id IS NOT NULL
+AND package_id LIKE '%LP%';
+
+
+SELECT package_id,
+       weight
+FROM parcels
+WHERE package_id IN ('LP00440426955957', 'LP00443694645781', 'LP00443817360264', 'LP00444107145538', 'LP00444228947221', 'LP00448741648072', 'LP00449716629183', 'LP00451048116832', 'LP00452682622962', 'LP00452739238824', 'LP00452897754663', 'LP00454607673283', 'LP00454716144868', 'LP00454786002177', 'LP00454788530667', 'LP00454848162127', 'LP00454907196478', 'LP00455017310247', 'LP00455033575257', 'LP00455080179349', 'LP00455105142283', 'LP00455123120075', 'LP00455123664927', 'LP00455138925949', 'LP00455188416146', 'LP00455191998808', 'LP00455192598618', 'LP00455197152001', 'LP00455201029144', 'LP00455201898541', 'LP00455208103558', 'LP00455209951651', 'LP00455219885980', 'LP00455224951743', 'LP00455225569134', 'LP00455243310759', 'LP00455250253927', 'LP00455256889377', 'LP00455265765950', 'LP00455267665033', 'LP00455268828993', 'LP00455268912145', 'LP00455270779631', 'LP00455277880336', 'LP00455278812946', 'LP00455290345921', 'LP00455290782943', 'LP00455292217189', 'LP00455318503023', 'LP00455325414153', 'LP00455330619011', 'LP00455334633519', 'LP00455339178291', 'LP00455341669234', 'LP00455342767952', 'LP00455344549354', 'LP00455344782639', 'LP00455347377446', 'LP00455348521553', 'LP00455349096447', 'LP00455353422355', 'LP00455353855575', 'LP00455354371649', 'LP00455356518417', 'LP00455366856546', 'LP00455370870748', 'LP00455372185378', 'LP00455372298163', 'LP00455373583124', 'LP00455393886361', 'LP00455394878665', 'LP00455402749673', 'LP00455407159749', 'LP00455412540386', 'LP00455421491359', 'LP00455423947302', 'LP00455431099492', 'LP00455431783512', 'LP00455433620553', 'LP00455433768009', 'LP00455435168141', 'LP00455436356474', 'LP00455440849501', 'LP00455454033267', 'LP00455456142421', 'LP00455459196176', 'LP00455459656570', 'LP00455469847156', 'LP00455479878235', 'LP00455479898133', 'LP00455479922733', 'LP00455481751812', 'LP00455482297323', 'LP00455486892181', 'LP00455490867247', 'LP00455491909987', 'LP00455493764858', 'LP00455496415553', 'LP00455496885768', 'LP00455497411826', 'LP00455497561446', 'LP00455497692610', 'LP00455498029501', 'LP00455498352374', 'LP00455499318481', 'LP00455499319557', 'LP00455499684734', 'LP00455500434633', 'LP00455500495955', 'LP00455500578428', 'LP00455500590119', 'LP00455501528988', 'LP00455501749635', 'LP00455502199398', 'LP00455502960801', 'LP00455503146726', 'LP00455503260061', 'LP00455503362473', 'LP00455503638340', 'LP00455503800496', 'LP00455503802024', 'LP00455503872245', 'LP00455504490381', 'LP00455504792096', 'LP00455505091913', 'LP00455505102861', 'LP00455505966453', 'LP00455506368927', 'LP00455507275340', 'LP00455507886336', 'LP00455508648483', 'LP00455513023965', 'LP00455513551551', 'LP00455514511170', 'LP00455515141284', 'LP00455515926374', 'LP00455519959354', 'LP00455520355256', 'LP00455521777175', 'LP00455521831845', 'LP00455522172469', 'LP00455526915897', 'LP00455533452846', 'LP00455533596400', 'LP00455534834486', 'LP00455535291209', 'LP00455535379938', 'LP00455535492156', 'LP00455542134408', 'LP00455542831901', 'LP00455544726432', 'LP00455548896928', 'LP00455559249616', 'LP00455561388995', 'LP00455562222158', 'LP00455564679647', 'LP00455566968303', 'LP00455582540605', 'LP00455583638850', 'LP00455584419564', 'LP00455625495315', 'LP00455627412515', 'LP00455628843085', 'LP00455630925346', 'LP00455633414876', 'LP00455635202268', 'LP00455641364294', 'LP00455643015336', 'LP00455643103310', 'LP00455643897633', 'LP00455648295325', 'LP00455648515178', 'LP00455649986543', 'LP00455651502627', 'LP00455653178931', 'LP00455653982624', 'LP00455658795571', 'LP00455661109799', 'LP00455662485168', 'LP00455663978863', 'LP00455667792445', 'LP00455673645632', 'LP00455679321207', 'LP00455680641460', 'LP00455681385127', 'LP00455683802650', 'LP00455698436079', 'LP00455707950284', 'LP00455716472606', 'LP00455717405860', 'LP00455724716303', 'LP00455725592642', 'LP00455728361549', 'LP00455730207939', 'LP00455732828349', 'LP00455732912379', 'LP00455734985269', 'LP00455738187853', 'LP00455738753744', 'LP00455738837624', 'LP00455740413011', 'LP00455743655825', 'LP00455745265945', 'LP00455750846325', 'LP00455753078449', 'LP00455755119883', 'LP00455763465209', 'LP00455765537747', 'LP00455766129604', 'LP00455767479328', 'LP00455769921598', 'LP00455779293178', 'LP00455780529736', 'LP00455782364374', 'LP00455783036275', 'LP00455783517931', 'LP00455783625330', 'LP00455790657709', 'LP00455791077762', 'LP00455791187287', 'LP00455791545119', 'LP00455792577750', 'LP00455792876616', 'LP00455793165754', 'LP00455793860312', 'LP00455794425681', 'LP00455794754972', 'LP00455795222185', 'LP00455795282146', 'LP00455796716418', 'LP00455797439694', 'LP00455797886223', 'LP00455799327905', 'LP00455799579914', 'LP00455801355579', 'LP00455801661982', 'LP00455802759261', 'LP00455802813487', 'LP00455803940149', 'LP00455803965349', 'LP00455804757798', 'LP00455806701492', 'LP00455808369611', 'LP00455808849002', 'LP00455809331821', 'LP00455810474804', 'LP00455810560614', 'LP00455811777363', 'LP00455813312148', 'LP00455814681888', 'LP00455814909719', 'LP00455814944234', 'LP00455815113071', 'LP00455815221317', 'LP00455816859149', 'LP00455819398165', 'LP00455820465099', 'LP00455820836475', 'LP00455824107504', 'LP00455824736938', 'LP00455825709011', 'LP00455827299641', 'LP00455828300571', 'LP00455830870900', 'LP00455835521687', 'LP00455837582780', 'LP00455838953573', 'LP00455841039153', 'LP00455844796254', 'LP00455851463541', 'LP00455854097396', 'LP00455868945464', 'LP00455870474472', 'LP00455872352391', 'LP00455872738292', 'LP00455874830778', 'LP00455875835018', 'LP00455877059059', 'LP00455883994834', 'LP00455885039359', 'LP00455887238702', 'LP00455887307315', 'LP00455887370021', 'LP00455890144412', 'LP00455891686515', 'LP00455891902829', 'LP00455892683321', 'LP00455896474173', 'LP00455896624932', 'LP00455896661687', 'LP00455896894235', 'LP00455897441783', 'LP00455899337606', 'LP00455908834708', 'LP00455908901396', 'LP00455909206215', 'LP00455909788488', 'LP00455910221084', 'LP00455923534453', 'LP00455929937897', 'LP00455931137648', 'LP00455931160917', 'LP00455937233246', 'LP00455937814204', 'LP00455939745152', 'LP00455945644991', 'LP00455947457196', 'LP00455955437375', 'LP00455960801879', 'LP00455962803824', 'LP00455964992467', 'LP00455980619774', 'LP00455981260559', 'LP00455982646157', 'LP00455985106815', 'LP00455985484878', 'LP00455988023426', 'LP00455993295344', 'LP00455998882540', 'LP00456001589923', 'LP00456006393160', 'LP00456012160222', 'LP00456020213413', 'LP00456025769655', 'LP00456030791139', 'LP00456032585605', 'LP00456033293796', 'LP00456034049403', 'LP00456036172440', 'LP00456037643983', 'LP00456038555870', 'LP00456040546707', 'LP00456041332738', 'LP00456043018298', 'LP00456043234214', 'LP00456044093086', 'LP00456044951464', 'LP00456046810311', 'LP00456046907408', 'LP00456047027331', 'LP00456049138580', 'LP00456049330440', 'LP00456049481497', 'LP00456050080353', 'LP00456050620397', 'LP00456050830877', 'LP00456051394150', 'LP00456051413046', 'LP00456054059459', 'LP00456054262917', 'LP00456054400591', 'LP00456055451809', 'LP00456056933926', 'LP00456057202861', 'LP00456059518404', 'LP00456060305700', 'LP00456060359400', 'LP00456063425382', 'LP00456064439026', 'LP00456065122485', 'LP00456070534646', 'LP00456071933236', 'LP00456072916568', 'LP00456073331475', 'LP00456073936030', 'LP00456073996491', 'LP00456075455056', 'LP00456076451685', 'LP00456076498606', 'LP00456078107824', 'LP00456078875503', 'LP00456081299293', 'LP00456084088172', 'LP00456085780631', 'LP00456088169570', 'LP00456103126079', 'LP00456104416229', 'LP00456107248498', 'LP00456108016871', 'LP00456120400162', 'LP00456125453029', 'LP00456142313293', 'LP00456164902866', 'LP00456166222836', 'LP00456194219733', 'LP00456195124056', 'LP00456196162217', 'LP00456206332429', 'LP00456208301494', 'LP00456286534748', 'LP00456957690680', 'LP00457336135711', 'LP00457395325449', 'LP00457402338417', 'LP00457462663965', 'LP00457469262195', 'LP00457472713373', 'LP00457513409251', 'LP00457582554924', 'LP00457587217193', 'LP00457589689330', 'LP00457622299069', 'LP00457626372841', 'LP00457634727701', 'LP00457639957443', 'LP00457641517965', 'LP00457657217176', 'LP00457673168778', 'LP00457737363967', 'LP00457758194542', 'LP00457765869518', 'LP00457781331763', 'LP00457866813322', 'LP00457916932980', 'LP00457930581516', 'LP00457946349506', 'LP00457951976017', 'LP00457953525258', 'LP00457953896994', 'LP00457962657148', 'LP00458020613713', 'LP00458089474188', 'LP00458205389930', 'LP00458213957735')
+;
+
+
+SELECT *
+FROM parcels
+LIMIT 10;
+
+select date_format(creation_time, '%Y-%m')     as month,
+       count(distinct parcels.tracking_number) as n_delivered_parcels
+from b2bcddb.parcels
+where date_format(creation_time, '%Y-%m') >= '2020-10'
+  and date_format(creation_time, '%Y-%m-%d') <= '2021-01-15'
+  and state = 'DELIVERED'
+group by 1
+order by 1 asc;
+
+select p.tracking_number
+from parcels p
+         left join recipient_addresses ra on p.recipient_address_id = ra.id
+where ra.raw_address is null
+limit 10;
+
+SELECT city_code,
+       MID(tracking_number, 6, 3) AS city,
+       tracking_number,
+       p.state_update_time,
+       COUNT(*)
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE p.state = 'IN_RETURNED_BIN'
+GROUP BY 1,
+         2,
+         3,
+         4
+HAVING COUNT(*) = 1;
+
+select count(*)
+from parcels
+where tracking_number REGEXP '^GVALEBCN[0-9]{12}$|^GVALEMAD[0-9]{12}$'
+  and recipient_address_id is null;
+
+SELECT o.city_code,
+       o.courier_id,
+       DATE(o.assignment_time)                                              AS day,
+        week(DATE (cotl.picking_up_time),1) AS week,
+       date_format(o.activation_time, '%Y-%m')                              as month,
+-- o.creation_time,
+--   o.assignment_time,
+-- op.pickup_time,
+-- cotl.delivered_time,
+       sum(TIME_TO_SEC(TIMEDIFF(delivered_time, o.assignment_time)) / 60.0) as dt,
+       sum(o.number_of_points)                                              AS delivery_points,
+   sum(cr.distance_in_meters),
+--   o.courier_id,
+       CASE
+           WHEN u.email LIKE '%jtalent%' THEN 'j&t'
+           ELSE 'glover'
+           END                                                              AS jt_courier,
+       count(o.code)                                                        AS n_orders
+--   SUM(CASE WHEN cdp.status = 'DELIVERED' THEN 1 END) AS delivered_parcels
+
+FROM orders o
+         LEFT JOIN customer_order_time_lines cotl ON cotl.order_id = o.id
+         LEFT JOIN couriers c ON c.id = o.courier_id
+         LEFT JOIN users u ON c.id = u.id
+         LEFT JOIN order_pickups op ON op.order_id = o.id
+         LEFT JOIN compensation_routes cr ON o.id = cr.order_id
+-- LEFT JOIN courier_deliveries cd on cd.first_order_id=o.id
+-- LEFT JOIN courier_delivery_packages cdp on cdp.delivery_id=cd.id
+
+WHERE date_format(o.activation_time, '%Y-%m') >= '2020-10'
+  and date_format(o.activation_time, '%Y-%m-%d') <= '2021-02-21'
+  AND customer_id = 35915555
+  AND current_status_type = 'DeliveredStatus'
+group by 1, 2, 3,4,5
+order by month desc;
+
+select first_order_id                                   as id,
+       DATE(p.update_time)                              AS day,
+       d.courier_id,
+       COUNT(CASE WHEN status = 'DELIVERED' THEN 1 END) AS delivered_parcels,
+       COUNT(*)                                         as parcels_in_order
+from courier_deliveries d
+         left join courier_delivery_packages p on p.delivery_id = d.id
+WHERE date_format(p.update_time, '%Y-%m') >= '2020-12'
+  and date_format(p.update_time, '%Y-%m-%d') <= '2021-02-07'
+GROUP BY 1;
+
+SELECT package_id,
+       tracking_number
+from parcels
+where date_format(creation_time, '%Y-%m-%d') >= '2020-12-05'
+  and date_format(creation_time, '%Y-%m-%d') <= '2020-12-25'
+  and package_id IS NOT NULL
+group by 1, 2;
+
+
+select date_format(changed_at, '%Y-%m') as month,
+       count(distinct psc.parcel_id)    as n_delivered_parcels
+from b2bcddb.parcel_state_changes psc
+where date_format(changed_at, '%Y-%m') >= '2020-10'
+  and date_format(changed_at, '%Y-%m-%d') <= '2021-01-15'
+  and state = 'DELIVERED'
+group by 1
+order by 1 asc
+
+select city_code,
+       date_format(creation_time, '%Y-%m-%d') as day,
+       count(distinct package_id)
+from b2bcddb.parcels
+where date_format(creation_time, '%Y-%m') >= '2021-01'
+  and package_id IS NOT NULL
+group by 1, 2;
+
+SELECT package_id,
+       tracking_number
+from parcels
+where package_id in ('LP00422216132015')
+group by 1, 2;
+
+SELECT package_id,
+       city_code,
+       MIN(changed_at) as admission_date
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE action = 'PICKER'
+GROUP BY 1,
+         2
+HAVING date_format(admission_date, '%Y-%m') >= '2021-02';
+
+SELECT right(YEARWEEK(routing_day, 1), 2)             as week,
+       count(distinct tracking_number)                as n_tracking_number,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END)                                       AS 0_d,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 1 THEN 1
+           END)                                       AS 1_d,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 2 THEN 1
+           END)                                       AS 2_d,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) > 2 THEN 1
+           END)                                       AS 3_d,
+       sum(CASE
+               WHEN state NOT IN ('PICKED', 'DELIVERED', 'FAKE_DELIVERY') THEN 1
+           END)                                       AS 99_d,
+       sum(CASE
+               WHEN state IN ('FAKE_DELIVERY') THEN 1
+           END)                                       AS fraud,
+       (sum(CASE
+                WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END)) / (count(distinct tracking_number))  as cd_0,
+       (sum(CASE
+                WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 1 THEN 1
+           END) + (sum(CASE
+                           WHEN state IN ('PICKED', 'DELIVERED') AND
+                                TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END))) / (count(distinct tracking_number)) as cd_1,
+       (sum(CASE
+                WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 2 THEN 1
+           END) + (sum(CASE
+                           WHEN state IN ('PICKED', 'DELIVERED') AND
+                                TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 1 THEN 1
+           END)) + (sum(CASE
+                            WHEN state IN ('PICKED', 'DELIVERED') AND
+                                 TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END))) / (count(distinct tracking_number)) as cd_2
+
+FROM (SELECT aux.city_code,
+             aux.parcel_id,
+             tracking_number,
+             state,
+             state_update_time,
+             routing_day,
+             routing_day_1
+      FROM (SELECT coalesce(city_code, mid(tracking_number, 6, 3)) as city_code,
+                   parcel_id,
+                   tracking_number,
+                   p.state,
+                   p.state_update_time,
+                   MIN(date(changed_at + INTERVAL 12 HOUR))        AS routing_day
+            FROM parcel_state_changes ps
+                     LEFT JOIN parcels p ON ps.parcel_id = p.id
+            WHERE ps.state = 'ROUTED_IN_BIN'
+            GROUP BY 1, 2, 3, 4, 5) aux
+               LEFT JOIN (SELECT parcel_id,
+                                 date(changed_at + INTERVAL 12 HOUR) AS routing_day_1
+                          FROM parcel_state_changes ps
+                                   LEFT JOIN parcels p ON ps.parcel_id = p.id
+                          WHERE ps.state = 'ROUTED_IN_BIN') r1
+                         ON r1.parcel_id = aux.parcel_id
+                             AND (routing_day + INTERVAL 1 DAY) = routing_day_1
+      WHERE YEARWEEK(routing_day, 1) >= YEARWEEK((NOW() - INTERVAL 14 WEEK), 1)
+        and YEARWEEK(routing_day, 1) < YEARWEEK(NOW(), 1)) aa
+group by 1;
+
+SELECT *
+FROM recipient_addresses
+LIMIT 10;
+
+
+SELECT CASE
+           WHEN ROUND(ra.postal_code, 0) LIKE ('8%') THEN 'BCN'
+           WHEN ROUND(ra.postal_code, 0) LIKE ('2%') THEN 'MAD'
+           ELSE NULL END                       AS city,
+       week(DATE(admission_date), 1)           AS week,
+       date_format(admission_date, '%Y-%m-%d') AS day,
+       ROUND(ra.postal_code, 0)                AS rounded_pc,
+       COUNT(DISTINCT pt.parcel_id)            AS total_parcels
+FROM (SELECT parcel_id,
+             city_code,
+             MIN(changed_at) as admission_date
+      FROM parcel_state_changes ps
+               LEFT JOIN parcels p ON p.id = ps.parcel_id
+      WHERE action = 'PICKER'
+      GROUP BY 1, 2) pt
+         LEFT JOIN recipient_addresses ra ON pt.parcel_id = ra.parcel_id
+WHERE week(DATE(admission_date), 1) IN (3, 4, 5)
+GROUP BY 1, 2, 3, 4
+HAVING city IN ('MAD', 'BCN');
+
+SELECT date_format(ps.changed_at, '%Y-%m-%d') AS day,
+       p.city_code,
+       COUNT(DISTINCT CASE WHEN ps.state = 'DISPATCHED' THEN ps.parcel_id ELSE NULL END) AS total_dispatched,
+       COUNT(DISTINCT CASE WHEN ps.state = 'PICKED' THEN ps.parcel_id ELSE NULL END) AS total_picked
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE ps.state IN ('DISPATCHED', 'PICKED')
+GROUP BY 1, 2
+ORDER BY 1, 2;
+
+SELECT date_format(ps.changed_at, '%Y-%m-%d') AS day,
+       p.city_code,
+       ps.parcel_id
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE ps.state = 'DISPATCHED'
+AND date_format(ps.changed_at, '%Y-%m-%d') = '2021-02-07';
+
+
+SELECT city_code,
+       MID(tracking_number,6,3) AS city,
+       tracking_number,
+       p.state_update_time,
+      date_format(p.state_update_time,'%Y-%m-%d') as day,
+       COUNT(*)
+FROM parcel_state_changes ps
+  LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE p.state = 'IN_RETURNED_BIN'
+GROUP BY 1,
+         2,
+         3,
+         4
+HAVING COUNT(*) = 1;
+
+
+SELECT city_code,
+       MID(tracking_number,6,3) AS city,
+       tracking_number,
+       st2.changed_at,
+       date_format(p.state_update_time,'%Y-%m-%d') as day
+FROM (SELECT psc.parcel_id,
+             changed_at
+FROM parcel_state_changes psc
+JOIN (SELECT parcel_id,
+       MIN(changed_at) AS first_status
+FROM parcel_state_changes
+GROUP BY 1) st1 ON psc.parcel_id = st1.parcel_id AND psc.changed_at = st1.first_status
+WHERE psc.state = 'IN_RETURNED_BIN')st2;
+
+SELECT psc.state,
+       changed_at
+FROM parcel_state_changes psc
+LEFT JOIN parcels p ON psc.parcel_id = p.id
+WHERE tracking_number = 'GVALEBCN000000323219';
+
+SELECT *
+FROM parcel_state_changes
+WHERE date_format(changed_at,'%Y-%m-%d') = '2020-12-13'
+LIMIT 10;
+
+SELECT *
+FROM parcel_state_changes
+WHERE parcel_id = 289238;
+
+SELECT *
+FROM parcels
+WHERE tracking_number = 'GVALEBCN000000323219';
+
+SELECT parcel_id,
+       MIN(changed_at) AS first_status
+FROM parcel_state_changes
+WHERE parcel_id = 289238
+GROUP BY 1;
+
+SELECT COALESCE(city_code,'N/A') AS city_code,
+       DATE (admission_time) AS admission_day,
+       COUNT(*)
+FROM (SELECT city_code,
+             tracking_number,
+             parcel_id,
+             MIN(changed_at) AS admission_time
+      FROM parcel_state_changes ps
+        LEFT JOIN parcels p ON ps.parcel_id = p.id
+      WHERE action = 'PICKER'
+      GROUP BY 1,2,3
+    HAVING admission_time > '2020-12-01 00:00:00.000000') aux
+GROUP BY 1,2;
+
+SELECT package_id,
+       COALESCE(city_code,'N/A') AS city_code
+FROM parcels
+where date_format(creation_time,'%Y-%m-%d') >= '2021-02-24'
+  AND date_format(creation_time,'%Y-%m-%d') <= '2021-03-17'
+AND package_id IS NOT NULL;
+
+SELECT package_id,
+       COALESCE(city_code,'N/A') AS city_code
+FROM parcels
+where package_id IN ('LP00420451290884', 'LP00421202547134', 'LP00421209749654', 'LP00421319694741', 'LP00421352762836', 'LP00421416722843', 'LP00421538470875', 'LP00421572539551', 'LP00421761872791', 'LP00421835237769', 'LP00421846404026', 'LP00421851824256', 'LP00421917932296', 'LP00424253626490', 'LP00424511371806', 'LP00424742326188', 'LP00424771727423', 'LP00424788503496', 'LP00424790842948', 'LP00424801979675', 'LP00424922610724', 'LP00425119841383', 'LP00425212196986', 'LP00425238991817', 'LP00425278572986', 'LP00425520004014', 'LP00425698871458', 'LP00425757461011', 'LP00425789394232', 'LP00425800242551', 'LP00425944027283', 'LP00426009168586', 'LP00426050036207', 'LP00426078075629', 'LP00426095035399', 'LP00426095959397', 'LP00426098592707', 'LP00426207250282', 'LP00426233678272', 'LP00426234435281', 'LP00426253401669', 'LP00426257280065', 'LP00426394503377', 'LP00426424779785', 'LP00426572132869', 'LP00426951043886', 'LP00427115616005', 'LP00427186175231', 'LP00427206197684', 'LP00427297187470', 'LP00427390445051', 'LP00427402952988', 'LP00427602588743', 'LP00427629667522', 'LP00427631174778', 'LP00427730409159', 'LP00427744190500', 'LP00427871933496', 'LP00427902315797', 'LP00427936530941', 'LP00428004181602', 'LP00428073207321', 'LP00428094156719', 'LP00428167404826', 'LP00428325626101', 'LP00428350997402', 'LP00428418013664', 'LP00428460309783', 'LP00428467895540', 'LP00428535347121', 'LP00428563563725', 'LP00428576500792', 'LP00428579437581')
+AND package_id IS NOT NULL;
+
+SELECT DATE(admission_time) AS day,
+       city_code,
+       COUNT(DISTINCT package_id)
+FROM (SELECT city_code,
+       package_id,
+       MIN(changed_at) AS admission_time
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON ps.parcel_id = p.id
+WHERE action = 'PICKER'
+GROUP BY 1, 2
+HAVING date_format(admission_time,'%Y-%m') = '2021-02')st1
+GROUP BY 1,2;
+
+SELECT DATE_FORMAT(admission_date, '%Y-%m-%d'),
+       COUNT(DISTINCT parcel_id)
+FROM (SELECT parcel_id,
+             tracking_number,
+             package_id,
+             MIN(changed_at) AS admission_date
+      FROM parcel_state_changes ps
+               LEFT JOIN parcels p ON p.id = ps.parcel_id
+      WHERE action = 'PICKER'
+      GROUP BY 1,
+               2,
+               3
+      HAVING DATE_FORMAT(admission_date, '%Y-%M') >= '2021-01') sbt
+GROUP BY 1;
+
+SELECT DISTINCT state
+FROM parcel_state_changes
+WHERE action = 'PICKER';
+
+SELECT *
+FROM parcel_state_changes ps
+               LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE package_id = 'LP00424698562411';
+
+SELECT
+routing_day,
+count(distinct tracking_number) as n_tracking_number,
+sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 0 THEN 1
+END) AS 0_d,
+sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 1 THEN 1
+END) AS 1_d,
+sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 2 THEN 1
+END) AS 2_d,
+sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) > 2 THEN 1
+END) AS 3_d,
+sum(CASE
+WHEN state NOT IN ('PICKED', 'DELIVERED', 'FAKE_DELIVERY') THEN 1
+END) AS 99_d,
+sum(CASE
+WHEN state IN ('FAKE_DELIVERY') THEN 1
+END) AS fraud,
+(sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 0 THEN 1
+END))/(count(distinct tracking_number)) as cd_0,
+(sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 1 THEN 1
+END)+(sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 0 THEN 1
+END)))/(count(distinct tracking_number)) as cd_1,
+(sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 2 THEN 1
+END)+(sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 1 THEN 1
+END))+(sum(CASE
+WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF (DAY,routing_day,state_update_time) = 0 THEN 1
+END)))/(count(distinct tracking_number)) as cd_2,
+fraud_ndnr.n_not_delivered_not_returned
+FROM (SELECT aux.city_code,aux.parcel_id,
+tracking_number,
+state,
+state_update_time,
+routing_day,
+routing_day_1
+FROM (SELECT coalesce(city_code, mid(tracking_number,6,3)) as city_code,parcel_id,
+tracking_number,
+p.state,
+p.state_update_time,
+MIN(date(changed_at + INTERVAL 12 HOUR)) AS routing_day
+FROM parcel_state_changes ps
+LEFT JOIN parcels p ON ps.parcel_id = p.id
+WHERE ps.state = 'ROUTED_IN_BIN'
+GROUP BY 1,
+2,
+3,
+4,5) aux
+LEFT JOIN (SELECT parcel_id,
+date(changed_at + INTERVAL 12 HOUR) AS routing_day_1
+FROM parcel_state_changes ps
+LEFT JOIN parcels p ON ps.parcel_id = p.id
+WHERE ps.state = 'ROUTED_IN_BIN') r1
+ON r1.parcel_id = aux.parcel_id
+AND (routing_day + INTERVAL 1 DAY) = routing_day_1
+WHERE date_format(routing_day,'%Y-%m-%d')>= '2020-12-01'  ) aa
+left join (
+select
+date(parcels.update_time) as date,
+count(distinct parcels.id) as n_not_delivered_not_returned
+from parcels
+where date_format(update_time,'%Y-%m-%d')>= '2020-12-01'  -- and date_format(update_time,'%Y-%m') <= '2020-12'
+and state='NOT_DELIVERED_NOT_RETURNED'
+group by 1  ) fraud_ndnr on fraud_ndnr.date=aa.routing_day
+
+group by 1;
+
+select
+date(changed_at) as date ,
+count(distinct psc.parcel_id) as n_picked
+
+from b2bcddb.parcel_state_changes psc
+where date_format(changed_at,'%Y-%m')>= '2020-12'
+and state='PICKED'
+group by 1
+order by 1 asc;
+
+SELECT *
+FROM parcel_state_changes
+where parcel_id = 212978
+LIMIT 10;
+
+
+SELECT day,
+       city_code,
+       total_scheduled,
+       total_picked,
+       1.00 - 1.00*total_picked/total_scheduled AS p_not_picked
+FROM (SELECT date_format(ps.changed_at,'%Y-%m-%d') AS day,
+       p.city_code,
+       COUNT(DISTINCT CASE WHEN ps.state = 'SCHEDULED' THEN ps.parcel_id ELSE NULL END) AS total_scheduled,
+       COUNT(DISTINCT CASE WHEN ps.state = 'PICKED' THEN ps.parcel_id ELSE NULL END) AS total_picked
+FROM parcel_state_changes ps
+LEFT JOIN parcels p ON ps.parcel_id = p.id
+WHERE date_format(ps.changed_at,'%Y-%m') >= '2021-01'
+GROUP BY 1,2
+ORDER BY 2,1)st1
+WHERE city_code IS NOT NULL
+AND total_scheduled > 0;
+
+SELECT day,
+       city_code,
+       total_scheduled,
+       total_picked,
+       1.00 - 1.00 * total_picked / total_scheduled AS '%_not_picked'
+FROM (
+         SELECT date_format(ps.changed_at, '%Y-%m-%d')                                           AS day,
+                p.city_code,
+                COUNT(DISTINCT CASE WHEN ps.state = 'SCHEDULED' THEN ps.parcel_id ELSE NULL END) AS total_scheduled,
+                COUNT(DISTINCT CASE WHEN ps.state = 'PICKED' THEN ps.parcel_id ELSE NULL END)    AS total_picked
+         FROM parcel_state_changes ps
+                  LEFT JOIN parcels p
+                            ON ps.parcel_id = p.id
+                  JOIN batching_route_parcels brp
+                       ON ps.parcel_id = brp.parcel_id
+                  JOIN (select distinct route_id
+                        from parcels as p
+                                  JOIN batching_route_parcels b
+                                            on p.id = b.parcel_id
+                        where p.state = 'DELIVERED'
+                          and cast(creation_time as date) >= '2021-01-01'
+         ) dr
+                       on dr.route_id = brp.route_id
+         WHERE date_format(ps.changed_at, '%Y-%m') >= '2021-01'
+           AND date_format(ps.changed_at, '%Y-%m-%d') <= '2021-02-24'
+           and p.city_code IS NOT NULL
+         GROUP BY 1, 2
+         ORDER BY 2, 1
+     ) st1
+where total_scheduled > 0;
+
+SELECT * FROM batching_route_parcels;
+
+SELECT day,
+       city_code,
+       total_scheduled,
+       total_picked,
+       1.00 - 1.00*total_picked/total_scheduled AS '%_not_picked'
+FROM (
+        SELECT date_format(ps.changed_at,'%Y-%m-%d') AS day,
+               p.city_code,
+               COUNT(DISTINCT CASE WHEN ps.state = 'SCHEDULED' THEN ps.parcel_id ELSE NULL END) AS total_scheduled,
+               COUNT(DISTINCT CASE WHEN ps.state = 'PICKED' THEN ps.parcel_id ELSE NULL END) AS total_picked
+        FROM parcel_state_changes ps
+            LEFT JOIN parcels p
+            ON ps.parcel_id = p.id
+            inner join batching_route_parcels brp
+            on ps.parcel_id = brp.parcel_id
+            inner join (    select distinct route_id, delivery_date
+                            from parcels as p
+                                inner join batching_route_parcels b
+                                on p.id = b.parcel_id
+                            where p.state = 'DELIVERED'
+                            and cast(delivery_date as date) >= '2021-01-01'
+                    ) dr
+            on dr.route_id = brp.route_id
+            and dr.delivery_date = p.delivery_date
+        WHERE date_format(ps.changed_at,'%Y-%m') >= '2021-01'
+        and p.city_code IS NOT NULL
+        GROUP BY 1,2
+        ORDER BY 2,1
+    ) st1
+where total_scheduled > 0;
+
+SELECT ROUND(weight+0.05,1) AS kg,
+package_id
+FROM parcels;
+
+SELECT CASE WHEN ROUND(weight+0.05,1) <= 2.1 THEN ROUND(weight+0.05,1) ELSE '>2' END AS weight_kg,
+COUNT(package_id)
+FROM parcels
+GROUP BY 1;
+
+SELECT COALESCE(city_code,'N/A') AS city_code,
+       DATE (admission_time) AS admission_day,
+       COUNT(*)
+FROM (SELECT city_code,
+             tracking_number,
+             parcel_id,
+             MIN(changed_at) AS admission_time
+      FROM parcel_state_changes ps
+               LEFT JOIN parcels p ON ps.parcel_id = p.id
+      WHERE action = 'PICKER'
+      GROUP BY 1,
+               2,
+               3) aux
+GROUP BY 1,
+         2
+order by 2 desc;
+
+SELECT DISTINCT action
+FROM parcel_location_changes
+WHERE location = 'IN_ADMITTED_BIN'
+LIMIT 10;
+
+SELECT parcel_id,
+       COUNT(DISTINCT id)
+FROM parcel_location_changes
+WHERE location = 'IN_ADMITTED_BIN'
+AND action = 'ADMISSION_SCAN'
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 100;
+
+SELECT *
+FROM parcel_location_changes
+WHERE parcel_id = 711772;
+
+SELECT *
+FROM parcel_location_changes
+WHERE location = 'IN_RETURNED_BIN'
+-- AND DATE(changed_at) < '2021-03-22'
+ORDER BY changed_at DESC
+LIMIT 100;
+
+SELECT DISTINCT location
+FROM parcel_location_changes
+WHERE action = 'CREATE_PARCEL';
+
+-- ADMITTED PARCELS
+SELECT COALESCE(city_code,'MAD') AS city_code,
+       DATE(changed_at) AS admission_day,
+       COUNT(DISTINCT plc.parcel_id)
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE plc.action = 'ADMISSION_SCAN'
+GROUP BY 1,2
+ORDER BY 1,2;
+
+SELECT *
+FROM parcel_location_changes
+WHERE location = 'IN_ROUTED_BIN'
+ORDER BY changed_at DESC
+LIMIT 100;
+
+SELECT DISTINCT location
+FROM parcel_location_changes
+WHERE action = 'PICKER';
+
+-- SORTED PARCELS
+SELECT COALESCE(city_code,'N/A') AS city_code,
+       DATE(changed_at - INTERVAL 8 HOUR) AS sorting_day,
+       COUNT(DISTINCT plc.parcel_id)
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE plc.action = 'PICKER'
+GROUP BY 1,2
+ORDER BY 1,2;
+
+SELECT parcel_id
+       changed_at,
+       location,
+       LEAD(location) OVER w AS next_location
+FROM parcel_location_changes
+WINDOW w AS (ORDER BY parcel_id, changed_at);
+
+SELECT * FROM parcel_location_changes
+WHERE parcel_id = 707641;
+
+SELECT COALESCE(city_code,'N/A') AS city_code,
+       changed_at,
+       parcel_id,
+       action,
+       plc.location
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE action = 'ADMISSION_SCAN'
+AND DATE(changed_at) = '2021-03-22'
+ORDER BY 1,2;
+
+SELECT DISTINCT state
+FROM parcel_state_changes;
+
+SELECT DISTINCT location
+FROM parcel_location_changes
+WHERE action = 'PICKER';
+
+SELECT parcel_id
+FROM parcel_state_changes
+WHERE state = 'ROUTED_NOT_IN_BIN'
+ORDER BY changed_at DESC
+LIMIT 100;
+
+SELECT *
+FROM parcel_state_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE tracking_number = 'GVALEBCN000000850678';
+
+SELECT *
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE tracking_number = 'GVALEBCN000000850678';
+
+-- DISPATCHED PARCELS
+SELECT date_format(ps.changed_at, '%Y-%m-%d') AS day,
+       p.city_code,
+       COUNT(DISTINCT ps.parcel_id) AS parcels_dispatched
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE ps.state = 'PICKED'
+GROUP BY 1, 2
+ORDER BY 1 DESC, 2;
+
+SELECT *
+FROM parcel_state_changes
+WHERE state = 'COORDINATES_FAILURE'
+ORDER BY changed_at DESC;
+
+-- STACKED PARCELS
+SELECT date_format(ps.changed_at, '%Y-%m-%d') AS day,
+       p.city_code,
+       COUNT(DISTINCT ps.parcel_id) AS parcels_dispatched
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE ps.state IN ('COORDINATES_FAILURE', 'LOCATION_MISMATCH')
+GROUP BY 1, 2
+ORDER BY 1 DESC, 2;
+
+SELECT city_code,
+       MID(tracking_number,6,3) AS city,
+       tracking_number,
+       p.state_update_time,
+       date_format(p.state_update_time,'%Y-%m-%d') as day,
+       COUNT(*)
+FROM parcel_state_changes ps
+         LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE p.state = 'IN_RETURNED_BIN'
+GROUP BY 1,
+         2,
+         3,
+         4
+HAVING COUNT(*) = 1;
+
+-- SORTED PARCELS
+SELECT COALESCE(city_code,'N/A') AS city_code,
+       DATE(changed_at - INTERVAL 8 HOUR) AS sorting_day,
+       COUNT(DISTINCT plc.parcel_id)
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE plc.action = 'PICKER'
+GROUP BY 1,2
+ORDER BY 1,2;
+
+-- SORTED PARCELS
+SELECT COALESCE(city_code,'N/A') AS city_code,
+       plc.parcel_id,
+       plc.action,
+       plc.location
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE plc.action = 'PICKER'
+AND DATE(changed_at - INTERVAL 8 HOUR) = '2021-03-24'
+GROUP BY 1,2
+ORDER BY 1,2;
+
+SELECT DATE(changed_at) AS admission_day,
+       COUNT(DISTINCT plc.parcel_id)
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE plc.action = 'ADMISSION_SCAN'
+GROUP BY 1
+ORDER BY 1;
+
+SELECT * FROM parcel_state_changes plc
+                  LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE tracking_number = 'GVALEMAD000000213603';
+
+SELECT *
+FROM parcel_state_changes plc
+    LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE package_id = 'LP00421359197766';
+
+SELECT DATE_FORMAT(routing_day, '%Y-%m')             as month,
+       count(distinct tracking_number)                as n_tracking_number,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END)                                       AS 0_d,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 1 THEN 1
+           END)                                       AS 1_d,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 2 THEN 1
+           END)                                       AS 2_d,
+       sum(CASE
+               WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) > 2 THEN 1
+           END)                                       AS 3_d,
+       sum(CASE
+               WHEN state NOT IN ('PICKED', 'DELIVERED', 'FAKE_DELIVERY') THEN 1
+           END)                                       AS 99_d,
+       sum(CASE
+               WHEN state IN ('FAKE_DELIVERY') THEN 1
+           END)                                       AS fraud,
+       (sum(CASE
+                WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END)) / (count(distinct tracking_number))  as cd_0,
+       (sum(CASE
+                WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 1 THEN 1
+           END) + (sum(CASE
+                           WHEN state IN ('PICKED', 'DELIVERED') AND
+                                TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END))) / (count(distinct tracking_number)) as cd_1,
+       (sum(CASE
+                WHEN state IN ('PICKED', 'DELIVERED') AND TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 2 THEN 1
+           END) + (sum(CASE
+                           WHEN state IN ('PICKED', 'DELIVERED') AND
+                                TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 1 THEN 1
+           END)) + (sum(CASE
+                            WHEN state IN ('PICKED', 'DELIVERED') AND
+                                 TIMESTAMPDIFF(DAY, routing_day, state_update_time) = 0 THEN 1
+           END))) / (count(distinct tracking_number)) as cd_2
+
+FROM (SELECT aux.city_code,
+             aux.parcel_id,
+             tracking_number,
+             state,
+             state_update_time,
+             routing_day,
+             routing_day_1
+      FROM (SELECT coalesce(city_code, mid(tracking_number, 6, 3)) as city_code,
+                   parcel_id,
+                   tracking_number,
+                   p.state,
+                   p.state_update_time,
+                   MIN(date(changed_at + INTERVAL 12 HOUR))        AS routing_day
+            FROM parcel_state_changes ps
+                     LEFT JOIN parcels p ON ps.parcel_id = p.id
+            WHERE ps.state = 'ROUTED_IN_BIN'
+            GROUP BY 1, 2, 3, 4, 5) aux
+               LEFT JOIN (SELECT parcel_id,
+                                 date(changed_at + INTERVAL 12 HOUR) AS routing_day_1
+                          FROM parcel_state_changes ps
+                                   LEFT JOIN parcels p ON ps.parcel_id = p.id
+                          WHERE ps.state = 'ROUTED_IN_BIN') r1
+                         ON r1.parcel_id = aux.parcel_id
+                             AND (routing_day + INTERVAL 1 DAY) = routing_day_1
+      WHERE DATE_FORMAT(routing_day, '%Y-%m') >= '2021-01') aa
+group by 1;
+
+
+SELECT month,
+       COUNT(DISTINCT CASE WHEN month = first_order_month THEN email ELSE NULL END) AS new_customers,
+       COUNT(DISTINCT email) AS total_customers,
+       COUNT(DISTINCT tracking_number) AS total_parcels
+FROM(select month(p.creation_time) as month,
+       first_order_t.first_order_month  as first_order_month,
+       p.tracking_number,
+       parcel_recipients.email as email
+from parcels p
+         left join parcel_recipients on p.id = parcel_recipients.parcel_id
+        left join  (
+    select distinct pr.email,
+                    month(min((t.creation_time))) as first_order_month
+    from parcels t
+             left join parcel_recipients pr on pr.parcel_id=t.id
+    group by 1
+) first_order_t
+               on parcel_recipients.email = first_order_t.email)st
+GROUP BY 1;
+
+SELECT DISTINCT location
+FROM parcel_location_changes;
+
+SELECT DISTINCT state
+FROM parcel_state_changes;
+
+SELECT *
+FROM parcel_state_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id;
+
+SELECT tracking_number
+FROM parcels
+WHERE state = 'TO_EXIT';
+
+SELECT *
+FROM parcel_location_changes plc
+         LEFT JOIN parcels p ON plc.parcel_id = p.id
+WHERE plc.action = 'ADMISSION_SCAN'
+  and date(changed_at) >= DATE (NOW()) - INTERVAL 4 DAY
+  AND substr(tracking_number, 9, 1) = 9
+GROUP BY 1;
+
+select ra.postal_code,
+       week(DATE(creation_time),1) AS week,
+       COUNT(DISTINCT tracking_number) AS orders
+from parcels p
+         left join recipient_addresses ra on p.recipient_address_id = ra.id
+WHERE date_format(p.creation_time,'%Y-%m') >= '2021-03'
+AND postal_code IS NOT NULL
+GROUP BY 1,2
+ORDER BY 1,2,3;
+
+SELECT
+    right(YEARWEEK(plc.changed_at,1),2) as week,
+    CASE WHEN substr(tracking_number, 3, 3) = 'ALE' and substr(tracking_number, 9, 1) = 0 THEN 'AliExpress'
+         else CASE WHEN substr(tracking_number, 9, 1) = 9 then 'Customima' else false
+             end end as partner_name,
+    p.city_code as city,
+    COUNT(DISTINCT case when plc.action='ADMISSION_SCAN' then plc.parcel_id else null end) as tota_parcels_admitted,
+    COUNT(DISTINCT case when p.state='DELIVERED' then p.tracking_number else null end) as tota_parcels_delivered,
+    COUNT(DISTINCT CASE WHEN psc.state='COORDINATES_FAILURE' then psc.parcel_id else null end) as n_coordinates_failure,
+    COUNT(DISTINCT CASE WHEN psc.state='OUT_OF_SERVICE_AREA' then psc.parcel_id else null end) as n_out_of_service_area
+FROM parcels p
+         LEFT JOIN parcel_location_changes plc ON plc.parcel_id = p.id
+         LEFT JOIN parcel_state_changes psc on p.id = psc.parcel_id
+WHERE plc.changed_at > DATE_SUB(NOW(), INTERVAL 3 WEEK)
+  AND city_code IS NOT NULL
+GROUP BY 1,2,3;
+
+SELECT *
+FROM parcel_state_changes ps
+               LEFT JOIN parcels p ON p.id = ps.parcel_id
+WHERE tracking_number = 'GVALEMAD000001297117';
+
+-- WEEKLY ADMISSIONS V1
+SELECT
+    WEEK(admission_date,1) AS week,
+    COUNT(distinct p_admission.parcel_id)                                                                          as n_admissions
+FROM  (
+          select distinct parcel_id, p.tracking_number, p.state, p.state_update_time, p.city_code, min(changed_at) + INTERVAL 1 DAY as admission_date
+          from parcel_location_changes as plc
+                   INNER JOIN parcels as p ON plc.parcel_id = p.id
+          where action in ('ADMISSION_SCAN')
+          group by 1,2,3,4,5
+      ) as p_admission
+GROUP BY 1;
+
+-- MONTHLY ADMISSIONS V1
+SELECT
+    date_format(admission_date,'%Y-%m') as month,
+    COUNT(distinct p_admission.parcel_id)                                                                          as n_admissions
+FROM  (
+          select distinct parcel_id, p.tracking_number, p.state, p.state_update_time, p.city_code, min(changed_at) as admission_date
+          from parcel_location_changes as plc
+                   INNER JOIN parcels as p ON plc.parcel_id = p.id
+          where action in ('ADMISSION_SCAN')
+          group by 1,2,3,4,5
+      ) as p_admission
+where date_format(admission_date,'%Y-%m') >= '2021-01'
+  AND date_format(admission_date,'%Y-%m-%d') <= '2021-06-27'
+GROUP BY 1;
+
+SELECT state,
+       COUNT(DISTINCT tracking_number)
+       FROM parcels
+WHERE tracking_number IN ('GVALESVL000001260544', 'GVALESVL000001302334', 'GVALESVL000001298658', 'GVALESVL000001289636', 'GVALESVL000001203014', 'GVALESVL000001203644', 'GVALESVL000001194561', 'GVALESVL000001243431', 'CNES00800017482', 'GVALESVL000001203757', 'GVALESVL000001261999', 'GVALESVL000001270162', 'GVALESVL000001306180', 'GVALESVL000001201834', 'CNES00800015782', 'GVALESVL000001264330', 'GVALESVL000001255095', 'GVALESVL000001206691', 'GVALESVL000001202630', 'GVALESVL000001201054', 'GVALESVL000001192647', 'GVALESVL000001202037', 'GVALESVL000001222778', 'GVALESVL000001222778', 'GVALESVL000001192402', 'GVALESVL000001193513', 'GVALESVL000001300008', 'GVALESVL000001190893', 'CNES00800013520', 'GVALESVL000001204311', 'GVALESVL000001274683', 'GVALESVL000001288250', 'GVALESVL000001259447', 'GVALESVL000001286878', 'GVALESVL000001279240', 'GVALESVL000001284846', 'GVALESVL000001267705', 'GVALESVL000001288104', 'GVALESVL000001285028', 'GVALESVL000001304972', 'GVALESVL000001288250', 'GVALESVL000001238120', 'GVALESVL000001272059', 'CNES00800004929', 'GVALESVL000001299261', 'GVALESVL000001285695', 'GVALESVL000001273688', 'GVALESVL000001271533', 'GVALESVL000001306871', 'GVALESVL000001284874', 'GVALESVL000001211451', 'GVALESVL000001254692', 'GVALESVL000001288877', 'GVALESVL000001192910', 'GVALESVL000001260347', 'GVALESVL000001200944', 'GVALESVL000001269929', 'GVALESVL000001202136', 'GVALESVL000001268380', 'GVALESVL000001250373', 'GVALESVL000001228574', 'GVALESVL000001250328', 'CNES00800010180', 'GVALESVL000001271455', 'GVALESVL000001298424', 'GVALESVL000001251347', 'GVALESVL000001207297', 'GVALESVL000001269512', 'GVALESVL000001296578', 'GVALESVL000001211265', 'GVALESVL000001280071', 'GVALESVL000001204748', 'GVALESVL000001204560', 'GVALESVL000001297918', 'CNES00800029005', 'CNES00800013587', 'GVALESVL000001298258', 'GVALESVL000001225192', 'GVALESVL000001291076', 'GVALESVL000001271842', 'GVALESVL000001258958', 'GVALESVL000001196620', 'GVALESVL000001198212', 'GVALESVL000001292214', 'GVALESVL000001194325', 'GVALESVL000001224908', 'GVALESVL000001254621', 'GVALESVL000001204073', 'GVALESVL000001252636', 'GVALESVL000001266156', 'GVALESVL000001221849', 'GVALESVL000001212385', 'GVALESVL000001204021', 'GVALESVL000001296847', 'GVALESVL000001292087', 'GVALESVL000001196829', 'GVALESVL000001207234', 'GVALESVL000001196425', 'GVALESVL000001199962', 'GVALESVL000001204492', 'GVALESVL000001194928', 'GVALESVL000001268943', 'GVALESVL000001309856', 'GVALESVL000001254769', 'GVALESVL000001202682', 'CNES00800018689', 'CNES00800001017', 'GVALESVL000001308747', 'GVALESVL000001202559', 'GVALESVL000001201355', 'GVALESVL000001201275', 'GVALESVL000001238200', 'GVALESVL000001192292', 'GVALESVL000001207709', 'GVALESVL000001251256', 'GVALESVL000001277355', 'GVALESVL000001240895', 'GVALESVL000001310628', 'GVALESVL000001280788', 'GVALESVL000001202190', 'GVALESVL000001190483', 'GVALESVL000001203036', 'GVALESVL000001259639', 'GVALESVL000001268119', 'GVALESVL000001276036', 'GVALESVL000001204132', 'GVALESVL000001199928', 'GVALESVL000001194368', 'GVALESVL000001275641', 'CNES00800005021', 'GVALESVL000001229748', 'CNES00800000906', 'GVALESVL000001196681', 'GVALESVL000001217378', 'GVALESVL000001242248', 'GVALESVL000001196975', 'GVALESVL000001304404', 'GVALESVL000001214796', 'GVALESVL000001279082', 'GVALESVL000001237767', 'GVALESVL000001201127', 'GVALESVL000001303778', 'GVALESVL000001307238', 'GVALESVL000001223715', 'GVALESVL000001287351', 'GVALESVL000001203278', 'GVALESVL000001308808', 'GVALESVL000001268577', 'GVALESVL000001308104', 'GVALESVL000001242191', 'GVALESVL000001272152', 'GVALESVL000001227743', 'GVALESVL000001292299', 'GVALESVL000001287281', 'GVALESVL000001201600', 'GVALESVL000001192299', 'CNES00800001337', 'GVALESVL000001273191', 'GVALESVL000001202655', 'GVALESVL000001191575', 'GVALESVL000001194848', 'GVALESVL000001195651', 'GVALESVL000001256485', 'GVALESVL000001286828', 'GVALESVL000001266212', 'GVALESVL000001267989', 'GVALESVL000001194986', 'GVALESVL000001282954', 'GVALESVL000001198951', 'GVALESVL000001266488', 'GVALESVL000001203617', 'GVALESVL000001307882', 'CNES00800018339', 'GVALESVL000001203997', 'GVALESVL000001201297', 'GVALESVL000001200890', 'CNES00800001509', 'CNES00800019264', 'CNES00800003566', 'CNES00800023408', 'GVALESVL000001286089', 'GVALESVL000001235914', 'CNES00800012141', 'GVALESVL000001233919', 'GVALESVL000001307493', 'GVALESVL000001242027', 'GVALESVL000001259323', 'CNES00800015835', 'GVALESVL000001274233', 'GVALESVL000001243640', 'CNES00800010018', 'GVALESVL000001202603', 'GVALESVL000001282161', 'GVALESVL000001286097', 'GVALESVL000001300412', 'GVALESVL000001196466', 'CNES00800012047', 'GVALESVL000001303389', 'GVALESVL000001204032', 'GVALESVL000001273597', 'CNES00800018906', 'GVALESVL000001242142', 'GVALESVL000001225751', 'CNES00800023468', 'GVALESVL000001301248', 'GVALESVL000001200879', 'GVALESVL000001240980', 'GVALESVL000001196601', 'GVALESVL000001271074', 'GVALESVL000001201241', 'GVALESVL000001190604', 'GVALESVL000001238496', 'CNES00800010773', 'GVALESVL000001244305', 'GVALESVL000001292964', 'GVALESVL000001267923', 'GVALESVL000001191976', 'GVALESVL000001228736', 'GVALESVL000001203925', 'GVALESVL000001243884', 'GVALESVL000001308382', 'GVALESVL000001238392', 'GVALESVL000001202719', 'GVALESVL000001204462', 'GVALESVL000001275927', 'GVALESVL000001278124', 'GVALESVL000001244687', 'GVALESVL000001197255', 'GVALESVL000001237072', 'GVALESVL000001272335', 'GVALESVL000001233183', 'GVALESVL000001273113', 'GVALESVL000001263175', 'GVALESVL000001202392', 'GVALESVL000001261026', 'GVALESVL000001200351', 'GVALESVL000001273293', 'GVALESVL000001272613', 'GVALESVL000001272154', 'GVALESVL000001256216', 'GVALESVL000001192177', 'GVALESVL000001271350', 'GVALESVL000001273980', 'GVALESVL000001253307', 'GVALESVL000001200044', 'GVALESVL000001274334', 'GVALESVL000001203217', 'GVALESVL000001277385', 'GVALESVL000001245637', 'GVALESVL000001236190', 'GVALESVL000001273349', 'GVALESVL000001257602', 'GVALESVL000001239937', 'GVALESVL000001215833', 'GVALESVL000001255307', 'GVALESVL000001205673', 'GVALESVL000001279683', 'GVALESVL000001229334', 'GVALESVL000001237745', 'GVALESVL000001273809', 'GVALESVL000001196509', 'GVALESVL000001245076', 'GVALESVL000001277066', 'GVALESVL000001277341', 'GVALESVL000001276955', 'GVALESVL000001263923', 'CNES00800001357', 'CNES00800001008', 'CNES00800017015', 'CNES00800019982', 'CNES00800014829', 'GVALESVL000001223550', 'GVALESVL000001276601', 'GVALESVL000001226952', 'GVALESVL000001273852', 'GVALESVL000001201261', 'GVALESVL000001198813', 'GVALESVL000001276165', 'GVALESVL000001195110', 'GVALESVL000001273498', 'GVALESVL000001222384', 'GVALESVL000001245497', 'GVALESVL000001275789', 'GVALESVL000001200962', 'GVALESVL000001271172', 'GVALESVL000001203753', 'GVALESVL000001268396', 'GVALESVL000001196901', 'GVALESVL000001238057', 'GVALESVL000001232554', 'GVALESVL000001248029', 'GVALESVL000001272033', 'GVALESVL000001204463', 'GVALESVL000001266208', 'GVALESVL000001227602', 'GVALESVL000001262804', 'GVALESVL000001210066', 'GVALESVL000001309633', 'GVALESVL000001202724', 'GVALESVL000001255231', 'GVALESVL000001244422', 'GVALESVL000001265829', 'GVALESVL000001266229', 'GVALESVL000001244883', 'GVALESVL000001227172', 'GVALESVL000001204856', 'GVALESVL000001204571', 'GVALESVL000001244449', 'GVALESVL000001269974', 'GVALESVL000001278720', 'GVALESVL000001245758', 'GVALESVL000001284485', 'CNES00800027363', 'CNES00800027090', 'CNES00800030412', 'CNES00800028014', 'CNES00800027587', 'CNES00800030471', 'CNES00800027299', 'CNES00800030855', 'CNES00800028234', 'CNES00800029966', 'CNES00800026603', 'CNES00800030383', 'CNES00800022283', 'CNES00800030935', 'CNES00800024393', 'CNES00800029974', 'CNES00800030168', 'CNES00800026460', 'CNES00800023777', 'CNES00800020260', 'CNES00800001556', 'CNES00800022546', 'CNES00800000619', 'CNES00800000910', 'CNES00800030739', 'GVALESVL000001201417', 'CNES00800014006', 'CNES00800017973', 'CNES00800027599', 'CNES00800001481', 'CNES00800025412', 'CNES00800022450', 'GVALESVL000001191930', 'GVALESVL000001298653', 'GVALESVL000001309368', 'CNES00800002333', 'CNES00800004651', 'GVALESVL000001308986', 'CNES00800004548', 'GVALESVL000001290190', 'GVALESVL000001308138', 'GVALESVL000001306501', 'CNES00800001089', 'CNES00800009188', 'GVALESVL000001309871', 'GVALESVL000001297655', 'CNES00800013255', 'GVALESVL000001290915', 'GVALESVL000001308197', 'CNES00800029508', 'CNES00800016944', 'CNES00800024371', 'CNES00800018638', 'CNES00800026553', 'CNES00800026924', 'CNES00800022977', 'CNES00800025153', 'CNES00800028810', 'CNES00800021490', 'CNES00800028145', 'CNES00800015737', 'CNES00800029597', 'CNES00800005611', 'CNES00800016623', 'CNES00800025422', 'CNES00800018943', 'CNES00800001567', 'GVALESVL000001198187', 'CNES00800028668', 'CNES00800018903', 'CNES00800007331', 'CNES00800018323', 'CNES00800017887', 'CNES00800016284', 'CNES00800029845', 'CNES00800024649', 'GVALESVL000001198785', 'CNES00800020908', 'CNES00800010508', 'CNES00800024437', 'CNES00800028900', 'CNES00800028059', 'CNES00800027880', 'CNES00800028643', 'CNES00800022577', 'CNES00800000658', 'GVALESVL000001200804', 'CNES00800004924', 'CNES00800022495', 'CNES00800024309', 'CNES00800026552', 'CNES00800028928', 'CNES00800008097', 'CNES00800023928', 'CNES00800001041', 'CNES00800024522', 'GVALESVL000001275304', 'CNES00800024266', 'CNES00800018773', 'CNES00800001104', 'CNES00800010623', 'CNES00800001004', 'CNES00800027183', 'CNES00800000790', 'CNES00800022878', 'CNES00800022841', 'CNES00800000912', 'CNES00800026444', 'CNES00800027829', 'CNES00800000569', 'CNES00800000631', 'CNES00800030712', 'CNES00800002265', 'CNES00800028509', 'CNES00800001630', 'CNES00800030426', 'CNES00800030226', 'CNES00800022857', 'CNES00800021484', 'CNES00800023844', 'CNES00800023369', 'CNES00800028293', 'CNES00800012214', 'CNES00800030278', 'CNES00800020100', 'CNES00800013477', 'CNES00800024121', 'CNES00800015924', 'CNES00800031404', 'CNES00800018525', 'CNES00800006048', 'CNES00800026491', 'CNES00800033781', 'CNES00800013886', 'CNES00800023173', 'CNES00800015946', 'GVALESVL000001309791', 'CNES00800010388', 'CNES00800029617', 'CNES00800017388', 'CNES00800012700', 'CNES00800029867', 'GVALESVL000001304190', 'CNES00800000817', 'CNES00800000536', 'CNES00800010654', 'CNES00800027338', 'CNES00800004758', 'CNES00800027227', 'CNES00800033156', 'CNES00800000789', 'CNES00800028348', 'CNES00800001145', 'CNES00800023029', 'GVALESVL000001301153', 'GVALESVL000001203174', 'CNES00800001345', 'CNES00800029499', 'CNES00800030311', 'CNES00800001174', 'CNES00800017855', 'GVALESVL000001201634', 'CNES00800001322', 'GVALESVL000001295678', 'CNES00800030237', 'CNES00800024247', 'GVALESVL000001202674', 'CNES00800030824', 'GVALESVL000001311104', 'CNES00800022545', 'GVALESVL000001204018', 'CNES00800029678', 'CNES00800032276', 'CNES00800004641', 'CNES00800031053', 'CNES00800000396', 'CNES00800030917', 'CNES00800018815', 'GVALESVL000001259824', 'CNES00800004835', 'CNES00800027078', 'CNES00800032352', 'CNES00800021329', 'CNES00800025684', 'CNES00800020891', 'CNES00800025804', 'CNES00800030958', 'CNES00800001540', 'GVALESVL000001262765', 'CNES00800017079', 'CNES00800008746', 'CNES00800019587', 'CNES00800037721', 'CNES00800033927', 'CNES00800034030', 'CNES00800035990', 'CNES00800020852', 'CNES00800032285', 'CNES00800030096', 'CNES00800032585', 'CNES00800032317', 'CNES00800016279', 'CNES00800030999', 'CNES00800030215', 'CNES00800039072', 'CNES00800034080', 'CNES00800023324', 'CNES00800027767', 'CNES00800043601', 'GVALEBCN000001193238', 'CNES00800030679', 'CNES00800032245', 'CNES00800024028', 'CNES00800033827', 'CNES00800034113', 'CNES00800041559', 'CNES00800030193', 'CNES00800042791', 'CNES00800038843', 'CNES00800040377', 'CNES00800044387', 'CNES00800038559', 'CNES00800037253', 'CNES00800040657', 'CNES00800036547', 'CNES00800037244', 'CNES00800042960', 'CNES00800036497', 'CNES00800038056', 'CNES00800019041', 'CNES00800028916', 'CNES00800042790', 'CNES00800040527', 'CNES00800040527', 'CNES00800042273', 'CNES00800037032', 'CNES00800041262', 'CNES00800043853', 'CNES00800037322', 'CNES00800009457', 'CNES00800041386', 'CNES00800037506', 'CNES00800032369', 'CNES00800040918', 'GVALESVL000001204256', 'CNES00800043606', 'CNES00800037640', 'CNES00800029206', 'CNES00800024062', 'CNES00800017921', 'CNES00800039338', 'CNES00800033658', 'CNES00800033893', 'CNES00800040280', 'CNES00800037748', 'CNES00800033638', 'CNES00800035880', 'CNES00800042133', 'CNES00800045050', 'CNES00800043160', 'CNES00800005121', 'CNES00800042772', 'CNES00800033894', 'CNES00800041866', 'CNES00800039640', 'CNES00800039648', 'CNES00800037182', 'CNES00800036941', 'CNES00800000974', 'CNES00800029783', 'CNES00800036154', 'CNES00800041365', 'CNES00800042530', 'CNES00800041660', 'CNES00800042174', 'CNES00800042846', 'CNES00800039136', 'CNES00800040849', 'CNES00800040919', 'CNES00800034636', 'CNES00800017396', 'CNES00800033099', 'CNES00800031900', 'CNES00800041452', 'CNES00800043951', 'CNES00800029643', 'CNES00800041003', 'GVALESVL000001278627', 'CNES00800001629', 'CNES00800028380', 'GVALESVL000001262018', 'CNES00800023727', 'CNES00800029455', 'CNES00800017677', 'CNES00800023810', 'CNES00800023921', 'CNES00800020064', 'CNES00800012808', 'CNES00800000977', 'CNES00800030066', 'CNES00800024260', 'CNES00800020357', 'CNES00800023952', 'CNES00800030746', 'CNES00800031100', 'CNES00800023798', 'CNES00800000540', 'CNES00800028317', 'CNES00800002236', 'CNES00800014862', 'CNES00800001157', 'CNES00800028793', 'CNES00800027462', 'CNES00800004796', 'CNES00800024506', 'CNES00800033204', 'CNES00800026593', 'CNES00800030414', 'CNES00800029208', 'CNES00800019794', 'CNES00800030923', 'CNES00800030552', 'CNES00800030707', 'CNES00800036305', 'CNES00800040259', 'GVALESVL000001271159', 'CNES00800038586', 'CNES00800043422', 'GVALESVL000001245862', 'CNES00800047940', 'CNES00800049202', 'CNES00800043552', 'CNES00800044349', 'CNES00800028746', 'GVALESVL000001286025', 'CNES00800043293', 'CNES00800046775', 'GVALESVL000001286808', 'CNES008000052696', 'CNES00800037990', 'CNES00800035201', 'GVALESVL000001204757', 'CNES00800044285', 'CNES00800046235', 'CNES00800041073', 'GVALESVL000001205006', 'CNES00800037438', 'GVALESVL000001283020', 'CNES00800041933', 'CNES00800035798', 'CNES00800037684', 'CNES00800043332', 'CNES00800039683')
+GROUP BY 1;
+
+SELECT *
+FROM parcels
+WHERE tracking_number IN ('GVALESVL000001260544', 'GVALESVL000001302334', 'GVALESVL000001298658', 'GVALESVL000001289636', 'GVALESVL000001203014', 'GVALESVL000001203644', 'GVALESVL000001194561', 'GVALESVL000001243431', 'CNES00800017482', 'GVALESVL000001203757', 'GVALESVL000001261999', 'GVALESVL000001270162', 'GVALESVL000001306180', 'GVALESVL000001201834', 'CNES00800015782', 'GVALESVL000001264330', 'GVALESVL000001255095', 'GVALESVL000001206691', 'GVALESVL000001202630', 'GVALESVL000001201054', 'GVALESVL000001192647', 'GVALESVL000001202037', 'GVALESVL000001222778', 'GVALESVL000001222778', 'GVALESVL000001192402', 'GVALESVL000001193513', 'GVALESVL000001300008', 'GVALESVL000001190893', 'CNES00800013520', 'GVALESVL000001204311', 'GVALESVL000001274683', 'GVALESVL000001288250', 'GVALESVL000001259447', 'GVALESVL000001286878', 'GVALESVL000001279240', 'GVALESVL000001284846', 'GVALESVL000001267705', 'GVALESVL000001288104', 'GVALESVL000001285028', 'GVALESVL000001304972', 'GVALESVL000001288250', 'GVALESVL000001238120', 'GVALESVL000001272059', 'CNES00800004929', 'GVALESVL000001299261', 'GVALESVL000001285695', 'GVALESVL000001273688', 'GVALESVL000001271533', 'GVALESVL000001306871', 'GVALESVL000001284874', 'GVALESVL000001211451', 'GVALESVL000001254692', 'GVALESVL000001288877', 'GVALESVL000001192910', 'GVALESVL000001260347', 'GVALESVL000001200944', 'GVALESVL000001269929', 'GVALESVL000001202136', 'GVALESVL000001268380', 'GVALESVL000001250373', 'GVALESVL000001228574', 'GVALESVL000001250328', 'CNES00800010180', 'GVALESVL000001271455', 'GVALESVL000001298424', 'GVALESVL000001251347', 'GVALESVL000001207297', 'GVALESVL000001269512', 'GVALESVL000001296578', 'GVALESVL000001211265', 'GVALESVL000001280071', 'GVALESVL000001204748', 'GVALESVL000001204560', 'GVALESVL000001297918', 'CNES00800029005', 'CNES00800013587', 'GVALESVL000001298258', 'GVALESVL000001225192', 'GVALESVL000001291076', 'GVALESVL000001271842', 'GVALESVL000001258958', 'GVALESVL000001196620', 'GVALESVL000001198212', 'GVALESVL000001292214', 'GVALESVL000001194325', 'GVALESVL000001224908', 'GVALESVL000001254621', 'GVALESVL000001204073', 'GVALESVL000001252636', 'GVALESVL000001266156', 'GVALESVL000001221849', 'GVALESVL000001212385', 'GVALESVL000001204021', 'GVALESVL000001296847', 'GVALESVL000001292087', 'GVALESVL000001196829', 'GVALESVL000001207234', 'GVALESVL000001196425', 'GVALESVL000001199962', 'GVALESVL000001204492', 'GVALESVL000001194928', 'GVALESVL000001268943', 'GVALESVL000001309856', 'GVALESVL000001254769', 'GVALESVL000001202682', 'CNES00800018689', 'CNES00800001017', 'GVALESVL000001308747', 'GVALESVL000001202559', 'GVALESVL000001201355', 'GVALESVL000001201275', 'GVALESVL000001238200', 'GVALESVL000001192292', 'GVALESVL000001207709', 'GVALESVL000001251256', 'GVALESVL000001277355', 'GVALESVL000001240895', 'GVALESVL000001310628', 'GVALESVL000001280788', 'GVALESVL000001202190', 'GVALESVL000001190483', 'GVALESVL000001203036', 'GVALESVL000001259639', 'GVALESVL000001268119', 'GVALESVL000001276036', 'GVALESVL000001204132', 'GVALESVL000001199928', 'GVALESVL000001194368', 'GVALESVL000001275641', 'CNES00800005021', 'GVALESVL000001229748', 'CNES00800000906', 'GVALESVL000001196681', 'GVALESVL000001217378', 'GVALESVL000001242248', 'GVALESVL000001196975', 'GVALESVL000001304404', 'GVALESVL000001214796', 'GVALESVL000001279082', 'GVALESVL000001237767', 'GVALESVL000001201127', 'GVALESVL000001303778', 'GVALESVL000001307238', 'GVALESVL000001223715', 'GVALESVL000001287351', 'GVALESVL000001203278', 'GVALESVL000001308808', 'GVALESVL000001268577', 'GVALESVL000001308104', 'GVALESVL000001242191', 'GVALESVL000001272152', 'GVALESVL000001227743', 'GVALESVL000001292299', 'GVALESVL000001287281', 'GVALESVL000001201600', 'GVALESVL000001192299', 'CNES00800001337', 'GVALESVL000001273191', 'GVALESVL000001202655', 'GVALESVL000001191575', 'GVALESVL000001194848', 'GVALESVL000001195651', 'GVALESVL000001256485', 'GVALESVL000001286828', 'GVALESVL000001266212', 'GVALESVL000001267989', 'GVALESVL000001194986', 'GVALESVL000001282954', 'GVALESVL000001198951', 'GVALESVL000001266488', 'GVALESVL000001203617', 'GVALESVL000001307882', 'CNES00800018339', 'GVALESVL000001203997', 'GVALESVL000001201297', 'GVALESVL000001200890', 'CNES00800001509', 'CNES00800019264', 'CNES00800003566', 'CNES00800023408', 'GVALESVL000001286089', 'GVALESVL000001235914', 'CNES00800012141', 'GVALESVL000001233919', 'GVALESVL000001307493', 'GVALESVL000001242027', 'GVALESVL000001259323', 'CNES00800015835', 'GVALESVL000001274233', 'GVALESVL000001243640', 'CNES00800010018', 'GVALESVL000001202603', 'GVALESVL000001282161', 'GVALESVL000001286097', 'GVALESVL000001300412', 'GVALESVL000001196466', 'CNES00800012047', 'GVALESVL000001303389', 'GVALESVL000001204032', 'GVALESVL000001273597', 'CNES00800018906', 'GVALESVL000001242142', 'GVALESVL000001225751', 'CNES00800023468', 'GVALESVL000001301248', 'GVALESVL000001200879', 'GVALESVL000001240980', 'GVALESVL000001196601', 'GVALESVL000001271074', 'GVALESVL000001201241', 'GVALESVL000001190604', 'GVALESVL000001238496', 'CNES00800010773', 'GVALESVL000001244305', 'GVALESVL000001292964', 'GVALESVL000001267923', 'GVALESVL000001191976', 'GVALESVL000001228736', 'GVALESVL000001203925', 'GVALESVL000001243884', 'GVALESVL000001308382', 'GVALESVL000001238392', 'GVALESVL000001202719', 'GVALESVL000001204462', 'GVALESVL000001275927', 'GVALESVL000001278124', 'GVALESVL000001244687', 'GVALESVL000001197255', 'GVALESVL000001237072', 'GVALESVL000001272335', 'GVALESVL000001233183', 'GVALESVL000001273113', 'GVALESVL000001263175', 'GVALESVL000001202392', 'GVALESVL000001261026', 'GVALESVL000001200351', 'GVALESVL000001273293', 'GVALESVL000001272613', 'GVALESVL000001272154', 'GVALESVL000001256216', 'GVALESVL000001192177', 'GVALESVL000001271350', 'GVALESVL000001273980', 'GVALESVL000001253307', 'GVALESVL000001200044', 'GVALESVL000001274334', 'GVALESVL000001203217', 'GVALESVL000001277385', 'GVALESVL000001245637', 'GVALESVL000001236190', 'GVALESVL000001273349', 'GVALESVL000001257602', 'GVALESVL000001239937', 'GVALESVL000001215833', 'GVALESVL000001255307', 'GVALESVL000001205673', 'GVALESVL000001279683', 'GVALESVL000001229334', 'GVALESVL000001237745', 'GVALESVL000001273809', 'GVALESVL000001196509', 'GVALESVL000001245076', 'GVALESVL000001277066', 'GVALESVL000001277341', 'GVALESVL000001276955', 'GVALESVL000001263923', 'CNES00800001357', 'CNES00800001008', 'CNES00800017015', 'CNES00800019982', 'CNES00800014829', 'GVALESVL000001223550', 'GVALESVL000001276601', 'GVALESVL000001226952', 'GVALESVL000001273852', 'GVALESVL000001201261', 'GVALESVL000001198813', 'GVALESVL000001276165', 'GVALESVL000001195110', 'GVALESVL000001273498', 'GVALESVL000001222384', 'GVALESVL000001245497', 'GVALESVL000001275789', 'GVALESVL000001200962', 'GVALESVL000001271172', 'GVALESVL000001203753', 'GVALESVL000001268396', 'GVALESVL000001196901', 'GVALESVL000001238057', 'GVALESVL000001232554', 'GVALESVL000001248029', 'GVALESVL000001272033', 'GVALESVL000001204463', 'GVALESVL000001266208', 'GVALESVL000001227602', 'GVALESVL000001262804', 'GVALESVL000001210066', 'GVALESVL000001309633', 'GVALESVL000001202724', 'GVALESVL000001255231', 'GVALESVL000001244422', 'GVALESVL000001265829', 'GVALESVL000001266229', 'GVALESVL000001244883', 'GVALESVL000001227172', 'GVALESVL000001204856', 'GVALESVL000001204571', 'GVALESVL000001244449', 'GVALESVL000001269974', 'GVALESVL000001278720', 'GVALESVL000001245758', 'GVALESVL000001284485', 'CNES00800027363', 'CNES00800027090', 'CNES00800030412', 'CNES00800028014', 'CNES00800027587', 'CNES00800030471', 'CNES00800027299', 'CNES00800030855', 'CNES00800028234', 'CNES00800029966', 'CNES00800026603', 'CNES00800030383', 'CNES00800022283', 'CNES00800030935', 'CNES00800024393', 'CNES00800029974', 'CNES00800030168', 'CNES00800026460', 'CNES00800023777', 'CNES00800020260', 'CNES00800001556', 'CNES00800022546', 'CNES00800000619', 'CNES00800000910', 'CNES00800030739', 'GVALESVL000001201417', 'CNES00800014006', 'CNES00800017973', 'CNES00800027599', 'CNES00800001481', 'CNES00800025412', 'CNES00800022450', 'GVALESVL000001191930', 'GVALESVL000001298653', 'GVALESVL000001309368', 'CNES00800002333', 'CNES00800004651', 'GVALESVL000001308986', 'CNES00800004548', 'GVALESVL000001290190', 'GVALESVL000001308138', 'GVALESVL000001306501', 'CNES00800001089', 'CNES00800009188', 'GVALESVL000001309871', 'GVALESVL000001297655', 'CNES00800013255', 'GVALESVL000001290915', 'GVALESVL000001308197', 'CNES00800029508', 'CNES00800016944', 'CNES00800024371', 'CNES00800018638', 'CNES00800026553', 'CNES00800026924', 'CNES00800022977', 'CNES00800025153', 'CNES00800028810', 'CNES00800021490', 'CNES00800028145', 'CNES00800015737', 'CNES00800029597', 'CNES00800005611', 'CNES00800016623', 'CNES00800025422', 'CNES00800018943', 'CNES00800001567', 'GVALESVL000001198187', 'CNES00800028668', 'CNES00800018903', 'CNES00800007331', 'CNES00800018323', 'CNES00800017887', 'CNES00800016284', 'CNES00800029845', 'CNES00800024649', 'GVALESVL000001198785', 'CNES00800020908', 'CNES00800010508', 'CNES00800024437', 'CNES00800028900', 'CNES00800028059', 'CNES00800027880', 'CNES00800028643', 'CNES00800022577', 'CNES00800000658', 'GVALESVL000001200804', 'CNES00800004924', 'CNES00800022495', 'CNES00800024309', 'CNES00800026552', 'CNES00800028928', 'CNES00800008097', 'CNES00800023928', 'CNES00800001041', 'CNES00800024522', 'GVALESVL000001275304', 'CNES00800024266', 'CNES00800018773', 'CNES00800001104', 'CNES00800010623', 'CNES00800001004', 'CNES00800027183', 'CNES00800000790', 'CNES00800022878', 'CNES00800022841', 'CNES00800000912', 'CNES00800026444', 'CNES00800027829', 'CNES00800000569', 'CNES00800000631', 'CNES00800030712', 'CNES00800002265', 'CNES00800028509', 'CNES00800001630', 'CNES00800030426', 'CNES00800030226', 'CNES00800022857', 'CNES00800021484', 'CNES00800023844', 'CNES00800023369', 'CNES00800028293', 'CNES00800012214', 'CNES00800030278', 'CNES00800020100', 'CNES00800013477', 'CNES00800024121', 'CNES00800015924', 'CNES00800031404', 'CNES00800018525', 'CNES00800006048', 'CNES00800026491', 'CNES00800033781', 'CNES00800013886', 'CNES00800023173', 'CNES00800015946', 'GVALESVL000001309791', 'CNES00800010388', 'CNES00800029617', 'CNES00800017388', 'CNES00800012700', 'CNES00800029867', 'GVALESVL000001304190', 'CNES00800000817', 'CNES00800000536', 'CNES00800010654', 'CNES00800027338', 'CNES00800004758', 'CNES00800027227', 'CNES00800033156', 'CNES00800000789', 'CNES00800028348', 'CNES00800001145', 'CNES00800023029', 'GVALESVL000001301153', 'GVALESVL000001203174', 'CNES00800001345', 'CNES00800029499', 'CNES00800030311', 'CNES00800001174', 'CNES00800017855', 'GVALESVL000001201634', 'CNES00800001322', 'GVALESVL000001295678', 'CNES00800030237', 'CNES00800024247', 'GVALESVL000001202674', 'CNES00800030824', 'GVALESVL000001311104', 'CNES00800022545', 'GVALESVL000001204018', 'CNES00800029678', 'CNES00800032276', 'CNES00800004641', 'CNES00800031053', 'CNES00800000396', 'CNES00800030917', 'CNES00800018815', 'GVALESVL000001259824', 'CNES00800004835', 'CNES00800027078', 'CNES00800032352', 'CNES00800021329', 'CNES00800025684', 'CNES00800020891', 'CNES00800025804', 'CNES00800030958', 'CNES00800001540', 'GVALESVL000001262765', 'CNES00800017079', 'CNES00800008746', 'CNES00800019587', 'CNES00800037721', 'CNES00800033927', 'CNES00800034030', 'CNES00800035990', 'CNES00800020852', 'CNES00800032285', 'CNES00800030096', 'CNES00800032585', 'CNES00800032317', 'CNES00800016279', 'CNES00800030999', 'CNES00800030215', 'CNES00800039072', 'CNES00800034080', 'CNES00800023324', 'CNES00800027767', 'CNES00800043601', 'GVALEBCN000001193238', 'CNES00800030679', 'CNES00800032245', 'CNES00800024028', 'CNES00800033827', 'CNES00800034113', 'CNES00800041559', 'CNES00800030193', 'CNES00800042791', 'CNES00800038843', 'CNES00800040377', 'CNES00800044387', 'CNES00800038559', 'CNES00800037253', 'CNES00800040657', 'CNES00800036547', 'CNES00800037244', 'CNES00800042960', 'CNES00800036497', 'CNES00800038056', 'CNES00800019041', 'CNES00800028916', 'CNES00800042790', 'CNES00800040527', 'CNES00800040527', 'CNES00800042273', 'CNES00800037032', 'CNES00800041262', 'CNES00800043853', 'CNES00800037322', 'CNES00800009457', 'CNES00800041386', 'CNES00800037506', 'CNES00800032369', 'CNES00800040918', 'GVALESVL000001204256', 'CNES00800043606', 'CNES00800037640', 'CNES00800029206', 'CNES00800024062', 'CNES00800017921', 'CNES00800039338', 'CNES00800033658', 'CNES00800033893', 'CNES00800040280', 'CNES00800037748', 'CNES00800033638', 'CNES00800035880', 'CNES00800042133', 'CNES00800045050', 'CNES00800043160', 'CNES00800005121', 'CNES00800042772', 'CNES00800033894', 'CNES00800041866', 'CNES00800039640', 'CNES00800039648', 'CNES00800037182', 'CNES00800036941', 'CNES00800000974', 'CNES00800029783', 'CNES00800036154', 'CNES00800041365', 'CNES00800042530', 'CNES00800041660', 'CNES00800042174', 'CNES00800042846', 'CNES00800039136', 'CNES00800040849', 'CNES00800040919', 'CNES00800034636', 'CNES00800017396', 'CNES00800033099', 'CNES00800031900', 'CNES00800041452', 'CNES00800043951', 'CNES00800029643', 'CNES00800041003', 'GVALESVL000001278627', 'CNES00800001629', 'CNES00800028380', 'GVALESVL000001262018', 'CNES00800023727', 'CNES00800029455', 'CNES00800017677', 'CNES00800023810', 'CNES00800023921', 'CNES00800020064', 'CNES00800012808', 'CNES00800000977', 'CNES00800030066', 'CNES00800024260', 'CNES00800020357', 'CNES00800023952', 'CNES00800030746', 'CNES00800031100', 'CNES00800023798', 'CNES00800000540', 'CNES00800028317', 'CNES00800002236', 'CNES00800014862', 'CNES00800001157', 'CNES00800028793', 'CNES00800027462', 'CNES00800004796', 'CNES00800024506', 'CNES00800033204', 'CNES00800026593', 'CNES00800030414', 'CNES00800029208', 'CNES00800019794', 'CNES00800030923', 'CNES00800030552', 'CNES00800030707', 'CNES00800036305', 'CNES00800040259', 'GVALESVL000001271159', 'CNES00800038586', 'CNES00800043422', 'GVALESVL000001245862', 'CNES00800047940', 'CNES00800049202', 'CNES00800043552', 'CNES00800044349', 'CNES00800028746', 'GVALESVL000001286025', 'CNES00800043293', 'CNES00800046775', 'GVALESVL000001286808', 'CNES008000052696', 'CNES00800037990', 'CNES00800035201', 'GVALESVL000001204757', 'CNES00800044285', 'CNES00800046235', 'CNES00800041073', 'GVALESVL000001205006', 'CNES00800037438', 'GVALESVL000001283020', 'CNES00800041933', 'CNES00800035798', 'CNES00800037684', 'CNES00800043332', 'CNES00800039683')
+
+SELECT *
+FROM parcels
+WHERE package_id = 'LP00451016429717';
+
+SELECT *
+FROM parcel_state_changes
+WHERE parcel_id = '1017357';
+
+SELECT tracking_number
+FROM parcel_location_changes psc
+JOIN parcels p ON psc.parcel_id = p.id
+WHERE tracking_number IN ('CNES00800065159', 'CNES00800050994', 'CNES00800058010', 'CNES00800056825', 'CNES00800050797', 'CNES00800052749', 'CNES00800050381', 'CNES00800055187', 'CNES00800054152', 'CNES00800056839', 'CNES00800050158', 'CNES00800049883', 'CNES00800051009', 'CNES00800050179', 'CNES00800055787', 'CNES00800058772', 'CNES00800055894', 'CNES00800057944', 'CNES00800056427', 'CNES00800056530', 'CNES00800050244', 'CNES00800051195', 'CNES00800056241', 'CNES00800051746', 'CNES00800058522', 'CNES00800052098', 'CNES00800050632', 'CNES00800051019', 'CNES00800050914', 'CNES00800064232', 'CNES00800051302', 'CNES00800050865', 'CNES00800052542', 'CNES00800050389', 'CNES00800057184', 'CNES00800050251', 'CNES00800058505', 'CNES00800050355', 'CNES00800059815', 'CNES00800060610', 'CNES00800060427', 'CNES00800059488', 'CNES00800061751', 'CNES00800061307', 'CNES00800059098', 'CNES00800058176', 'CNES00800061731', 'CNES00800060810', 'CNES00800056936', 'CNES00800059074', 'CNES00800061246', 'CNES00800059132', 'CNES00800060871', 'CNES00800060711', 'CNES00800060232', 'CNES00800060450', 'CNES00800058782', 'CNES00800060229', 'CNES00800059165', 'CNES00800059827', 'CNES00800060651', 'CNES00800059736', 'CNES00800059476', 'CNES00800060765', 'CNES00800059739', 'CNES00800061267', 'CNES00800060818', 'CNES00800059596', 'CNES00800053618', 'CNES00800059604', 'CNES00800060493', 'CNES00800058798', 'CNES00800060432', 'CNES00800060502', 'CNES00800058672', 'CNES00800061037', 'CNES00800060803', 'CNES00800059091', 'CNES00800060127', 'CNES00800059538', 'CNES00800059967', 'CNES00800059487', 'CNES00800057890', 'CNES00800059763', 'CNES00800059904', 'CNES00800059786', 'CNES00800058489', 'CNES00800060706', 'CNES00800060061', 'CNES00800059510', 'CNES00800058984', 'CNES00800059868', 'CNES00800059482', 'CNES00800060460', 'CNES00800059762', 'CNES00800059662', 'CNES00800059291', 'CNES00800057801', 'CNES00800058665', 'CNES00800060825', 'CNES00800061834', 'CNES00800059983', 'CNES00800059824', 'CNES00800058735', 'CNES00800059615', 'CNES00800060405', 'CNES00800059493', 'CNES00800059494', 'CNES00800061273', 'CNES00800057489', 'CNES00800060348', 'CNES00800059554', 'CNES00800059623', 'CNES00800061031', 'CNES00800061025', 'CNES00800060654', 'CNES00800059181', 'CNES00800059917', 'CNES00800060406', 'CNES00800059852', 'CNES00800059293', 'CNES00800060294', 'CNES00800058895', 'CNES00800060006', 'CNES00800060532', 'CNES00800059492', 'CNES00800059890', 'CNES00800060107', 'CNES00800059638', 'CNES00800061005', 'CNES00800060002', 'CNES00800061534', 'CNES00800061115', 'CNES00800061823', 'CNES00800060484', 'CNES00800060910', 'CNES00800060705', 'CNES00800060822', 'CNES00800060013', 'CNES00800060017', 'CNES00800059862', 'CNES00800059725', 'CNES00800061247', 'CNES00800056648', 'CNES00800059446', 'CNES00800059872', 'CNES00800059838', 'CNES00800059932', 'CNES00800059288', 'CNES00800060125', 'CNES00800060030', 'CNES00800060110', 'CNES00800059279', 'CNES00800059425', 'CNES00800058925', 'CNES00800060710', 'CNES00800060270', 'CNES00800060736', 'CNES00800059889', 'CNES00800061511', 'CNES00800060773', 'CNES00800059512', 'CNES00800059905', 'CNES00800059469', 'CNES00800060215', 'CNES00800060407', 'CNES00800059563', 'CNES00800060074', 'CNES00800059894', 'CNES00800059627', 'CNES00800060434', 'CNES00800060515', 'CNES00800059997', 'CNES00800060377', 'CNES00800059986', 'CNES00800059797', 'CNES00800059918', 'CNES00800059845', 'CNES00800059990', 'CNES00800058678', 'CNES00800061098', 'CNES00800059514', 'CNES00800062043', 'CNES00800059936', 'CNES00800060811', 'CNES00800061549', 'CNES00800059664', 'CNES00800061078', 'CNES00800058846', 'CNES00800060157', 'CNES00800060646', 'CNES00800061461', 'CNES00800059048', 'CNES00800058497', 'CNES00800059491', 'CNES00800061173', 'CNES00800059226', 'CNES00800059485', 'CNES00800063831', 'CNES00800060179', 'CNES00800059570', 'CNES00800060482', 'CNES00800058150', 'CNES00800060235', 'CNES00800060401', 'CNES00800059258', 'CNES00800059462', 'CNES00800060275', 'CNES00800061079', 'CNES00800060182', 'CNES00800061131', 'CNES00800059175', 'CNES00800059681', 'CNES00800060447', 'CNES00800062984', 'CNES00800058831', 'CNES00800059802', 'CNES00800056534', 'CNES00800059511', 'CNES00800059461', 'CNES00800058875', 'CNES00800059277', 'CNES00800059477', 'CNES00800058964', 'CNES00800058837', 'CNES00800059261', 'CNES00800058892', 'CNES00800059255', 'CNES00800059225', 'CNES00800059245', 'CNES00800058845', 'CNES00800062221', 'CNES00800058277', 'CNES00800062350', 'CNES00800062876', 'CNES00800060996', 'CNES00800058474', 'CNES00800064085', 'CNES00800062271', 'CNES00800059564', 'CNES00800060546', 'CNES00800059265', 'CNES00800061170', 'CNES00800059037', 'CNES00800058546', 'CNES00800061274', 'CNES00800059264', 'CNES00800058737', 'CNES00800061468', 'CNES00800060073', 'CNES00800058194', 'CNES00800060379', 'CNES00800060317', 'CNES00800060756', 'CNES00800061460', 'CNES00800061202', 'CNES00800061943', 'CNES00800059509', 'CNES00800059092', 'CNES00800059517', 'CNES00800059164', 'CNES00800061394', 'CNES00800057796', 'CNES00800059649', 'CNES00800060830', 'CNES00800059621', 'CNES00800061142', 'CNES00800061446', 'CNES00800061649', 'CNES00800060730', 'CNES00800061573', 'CNES00800061719', 'CNES00800056012', 'CNES00800060141', 'CNES00800058861', 'CNES00800060836', 'CNES00800060231', 'CNES00800058443', 'CNES00800059873', 'CNES00800061324', 'CNES00800060246', 'CNES00800060560', 'CNES00800061755', 'CNES00800060375', 'CNES00800060826', 'CNES00800059800', 'CNES00800060380', 'CNES00800060959', 'CNES00800060140', 'CNES00800061622', 'CNES00800058839', 'CNES00800062017', 'CNES00800060291', 'CNES00800061303', 'CNES00800060113', 'CNES00800059881', 'CNES00800061443', 'CNES00800061226', 'CNES00800061641', 'CNES00800059591', 'CNES00800061466', 'CNES00800060371', 'CNES00800060328', 'CNES00800060743', 'CNES00800060874', 'CNES00800058867', 'CNES00800061451', 'CNES00800058968', 'CNES00800060903', 'CNES00800060595', 'CNES00800060534', 'CNES00800060957', 'CNES00800058753', 'CNES00800059938', 'CNES00800064101', 'CNES00800062907', 'CNES00800059671', 'CNES00800061883', 'CNES00800061676', 'CNES00800061881', 'CNES00800052033', 'CNES00800062069', 'CNES00800062059', 'CNES00800058685', 'CNES00800057909', 'CNES00800057563', 'CNES00800057396', 'CNES00800058071', 'CNES00800057162', 'CNES00800059703', 'CNES00800058797', 'CNES00800058032', 'CNES00800058866', 'CNES00800059174', 'CNES00800052620', 'CNES00800060041', 'CNES00800060112', 'CNES00800058046', 'CNES00800059519', 'CNES00800052433', 'CNES00800057046', 'CNES00800059254', 'CNES00800058422', 'CNES00800059267', 'CNES00800058965', 'CNES00800057582', 'CNES00800058120', 'CNES00800060129', 'CNES00800058131', 'CNES00800058500', 'CNES00800059287', 'CNES00800058452', 'CNES00800058812', 'CNES00800056500', 'CNES00800059481', 'CNES00800058893', 'CNES00800060221', 'CNES00800058614', 'CNES00800057347', 'CNES00800058588', 'CNES00800060222', 'CNES00800058132', 'CNES00800058702', 'CNES00800055533', 'CNES00800057960', 'CNES00800059190', 'CNES00800059545', 'CNES00800059282', 'CNES00800057846', 'CNES00800059610', 'CNES00800057553', 'CNES00800059013', 'CNES00800058804', 'CNES00800058701', 'CNES00800059249', 'CNES00800059276', 'CNES00800058554', 'CNES00800056766', 'CNES00800059236', 'CNES00800059582', 'CNES00800057961', 'CNES00800060547', 'CNES00800058981', 'CNES00800060292', 'CNES00800058566', 'CNES00800061277', 'CNES00800061228', 'CNES00800062036', 'CNES00800062051', 'CNES00800060398', 'CNES00800058675', 'CNES00800061223', 'CNES00800059474', 'CNES00800060648', 'CNES00800058125', 'CNES00800059411', 'CNES00800060387', 'CNES00800060184', 'CNES00800058596', 'CNES00800058642', 'CNES00800060480', 'CNES00800060234', 'CNES00800059952', 'CNES00800062049', 'CNES00800060136', 'CNES00800061334', 'CNES00800048113', 'CNES00800061269', 'CNES00800061205', 'CNES00800061398', 'CNES00800060747', 'CNES00800060014', 'CNES00800059837', 'CNES00800060742', 'CNES00800060799', 'CNES00800061355', 'CNES00800060133', 'CNES00800059133', 'CNES00800061758', 'CNES00800060475', 'CNES00800061038', 'CNES00800057738', 'CNES00800059750', 'CNES00800061556', 'CNES00800060675', 'CNES00800059860', 'CNES00800061058', 'CNES00800058800', 'CNES00800059841', 'CNES00800061162', 'CNES00800060984', 'CNES00800060330', 'CNES00800058970', 'CNES00800055587', 'CNES00800060760', 'CNES00800061149', 'CNES00800059914', 'CNES00800059962', 'CNES00800060975', 'CNES00800064669', 'CNES00800060976', 'CNES00800060880', 'CNES00800059266', 'CNES00800053964', 'CNES00800054821', 'CNES00800060438', 'CNES00800061831', 'CNES00800060230', 'CNES00800059179', 'CNES00800059433', 'CNES00800062277', 'CNES00800059912', 'CNES00800060538', 'CNES00800060132', 'CNES00800059413', 'CNES00800059887', 'CNES00800059268', 'CNES00800059455', 'CNES00800060653', 'CNES00800059806', 'CNES00800060392', 'CNES00800059300', 'CNES00800059689', 'CNES00800058582', 'CNES00800059289', 'CNES00800059639', 'CNES00800060530', 'CNES00800064663', 'CNES00800064603', 'CNES00800065762', 'CNES00800065787', 'CNES00800064985', 'CNES00800060403', 'CNES00800061185', 'CNES00800059855', 'CNES00800059652', 'CNES00800060628', 'CNES00800060423', 'CNES00800060746', 'CNES00800061251', 'CNES00800060965', 'CNES00800060433', 'CNES00800061255', 'CNES00800060927', 'CNES00800060138', 'CNES00800052578', 'CNES00800060156', 'CNES00800061006', 'CNES00800062304', 'CNES00800058423', 'CNES00800061404', 'CNES00800059830', 'CNES00800060897', 'CNES00800060793', 'CNES00800059869', 'CNES00800060263', 'CNES00800061311', 'CNES00800059067', 'CNES00800060671',
+                          'CNES00800061002', 'CNES00800061276', 'CNES00800062112', 'CNES00800059592', 'CNES00800059866', 'CNES00800059803', 'CNES00800059044', 'CNES00800061606', 'CNES00800058874', 'CNES00800060186', 'CNES00800059073', 'CNES00800060958', 'CNES00800061500', 'CNES00800060130', 'CNES00800059947', 'CNES00800060109', 'CNES00800059700', 'CNES00800059975', 'CNES00800060716', 'CNES00800059632', 'CNES00800061558', 'CNES00800059699', 'CNES00800060360', 'CNES00800060608', 'CNES00800058660', 'CNES00800061054', 'CNES00800060442', 'CNES00800059748', 'CNES00800061253', 'CNES00800060860', 'CNES00800060660', 'CNES00800061209', 'CNES00800058987', 'CNES00800059945', 'CNES00800059230', 'CNES00800058573', 'CNES00800061903', 'CNES00800060963', 'CNES00800060154', 'CNES00800059130', 'CNES00800058428', 'CNES00800060277', 'CNES00800060703', 'CNES00800056670', 'CNES00800060218', 'CNES00800060365', 'CNES00800059744', 'CNES00800061181', 'CNES00800060914', 'CNES00800058982', 'CNES00800060382', 'CNES00800059927', 'CNES00800060565', 'CNES00800055455', 'CNES00800061048', 'CNES00800061120', 'CNES00800059600', 'CNES00800059537', 'CNES00800061047', 'CNES00800060010', 'CNES00800059460', 'CNES00800059950', 'CNES00800061252', 'CNES00800061418', 'CNES00800060639', 'CNES00800060308', 'CNES00800058606', 'CNES00800059058', 'CNES00800059498', 'CNES00800058869', 'CNES00800057893', 'CNES00800060052', 'CNES00800059170', 'CNES00800060413', 'CNES00800058494', 'CNES00800059151', 'CNES00800058991', 'CNES00800060609', 'CNES00800060354', 'CNES00800059191', 'CNES00800058294', 'CNES00800062329', 'CNES00800060597', 'CNES00800060624', 'CNES00800059735', 'CNES00800060409', 'CNES00800060600', 'CNES00800059539', 'CNES00800060850', 'CNES00800060462', 'CNES00800061183', 'CNES00800059993', 'CNES00800059541', 'CNES00800059650', 'CNES00800059684', 'CNES00800059590', 'CNES00800058910', 'CNES00800059674', 'CNES00800060316', 'CNES00800059795', 'CNES00800061498', 'CNES00800060824', 'CNES00800060059', 'CNES00800060607', 'CNES00800062104', 'CNES00800058499', 'CNES00800060162', 'CNES00800059109', 'CNES00800061678', 'CNES00800059958', 'CNES00800062247', 'CNES00800061215', 'CNES00800060647', 'CNES00800060766', 'CNES00800060852', 'CNES00800060314', 'CNES00800059954', 'CNES00800061232', 'CNES00800061381', 'CNES00800059788', 'CNES00800059839', 'CNES00800061163', 'CNES00800060961', 'CNES00800059777', 'CNES00800058187', 'CNES00800059690', 'CNES00800060430', 'CNES00800061375', 'CNES00800059817', 'CNES00800061547', 'CNES00800060476', 'CNES00800061137', 'CNES00800062407', 'CNES00800059486', 'CNES00800058799', 'CNES00800061608', 'CNES00800059464', 'CNES00800057362', 'CNES00800061201', 'CNES00800062323', 'CNES00800061804', 'CNES00800060411', 'CNES00800062023', 'CNES00800061056', 'CNES00800061432', 'CNES00800061906', 'CNES00800060501', 'CNES00800059678', 'CNES00800058626', 'CNES00800059056', 'CNES00800066376', 'CNES00800059528', 'CNES00800059552', 'CNES00800059809', 'CNES00800059757', 'CNES00800059172', 'CNES00800059453', 'CNES00800059290', 'CNES00800059169', 'CNES00800059637', 'CNES00800059764', 'CNES00800059544', 'CNES00800058455', 'CNES00800059740', 'CNES00800059930', 'CNES00800058454', 'CNES00800058811', 'CNES00800048065', 'CNES00800058431', 'CNES00800059429', 'CNES00800058684', 'CNES00800059157', 'CNES00800059228', 'CNES00800057994', 'CNES00800063622', 'CNES00800059219', 'CNES00800057998', 'CNES00800057840', 'CNES00800057374', 'CNES00800058041', 'CNES00800056681', 'CNES00800058950', 'CNES00800058943', 'CNES00800059059', 'CNES00800057983', 'CNES00800057745', 'CNES00800059247', 'CNES00800057886', 'CNES00800057837', 'CNES00800058580', 'CNES00800057385', 'CNES00800058825', 'CNES00800058638', 'CNES00800059256', 'CNES00800057815', 'CNES00800057490', 'CNES00800057598', 'CNES00800057252', 'CNES00800058633', 'CNES00800057841', 'CNES00800057350', 'CNES00800058157', 'CNES00800059077', 'CNES00800057058', 'CNES00800058945', 'CNES00800056490', 'CNES00800058913', 'CNES00800058938', 'CNES00800057195', 'CNES00800058952', 'CNES00800058838', 'CNES00800058156', 'CNES00800058491', 'CNES00800057733', 'CNES00800059118', 'CNES00800056695', 'CNES00800058948', 'CNES00800058558', 'CNES00800059216', 'CNES00800059021', 'CNES00800057283', 'CNES00800057390', 'CNES00800057342', 'CNES00800058485', 'CNES00800059038', 'CNES00800058453', 'CNES00800058627', 'CNES00800055719', 'CNES00800058501', 'CNES00800057384', 'CNES00800058914', 'CNES00800058917', 'CNES00800058934', 'CNES00800058465', 'CNES00800059215', 'CNES00800058636', 'CNES00800058654', 'CNES00800058169', 'CNES00800058044', 'CNES00800057884', 'CNES00800058438', 'CNES00800059240', 'CNES00800060205', 'CNES00800059672', 'CNES00800060009', 'CNES00800059404', 'CNES00800059908', 'CNES00800059778', 'CNES00800059421', 'CNES00800059186', 'CNES00800061543', 'CNES00800061519', 'CNES00800058884', 'CNES00800059804', 'CNES00800059513', 'CNES00800058136', 'CNES00800063906', 'CNES00800064031', 'CNES00800061007', 'CNES00800059449', 'CNES00800061244', 'CNES00800060048', 'CNES00800060603', 'CNES00800060465', 'CNES00800060764', 'CNES00800061708', 'CNES00800061041', 'CNES00800060868', 'CNES00800060735', 'CNES00800061190', 'CNES00800060839', 'CNES00800060784', 'CNES00800059598', 'CNES00800060991', 'CNES00800060169', 'CNES00800059603', 'CNES00800058143', 'CNES00800049734', 'CNES00800058537', 'CNES00800057975', 'CNES00800057358', 'CNES00800058547', 'CNES00800058686', 'CNES00800058763', 'CNES00800057897', 'CNES00800058142', 'CNES00800058272', 'CNES00800058658', 'CNES00800059033', 'CNES00800055698', 'CNES00800058276', 'CNES00800058144', 'CNES00800057836', 'CNES00800058457', 'CNES00800058472', 'CNES00800058768', 'CNES00800059153', 'CNES00800057791', 'CNES00800059036', 'CNES00800058597', 'CNES00800059079', 'CNES00800058754', 'CNES00800059049', 'CNES00800058738', 'CNES00800058471', 'CNES00800058154', 'CNES00800059039', 'CNES00800058481', 'CNES00800058586', 'CNES00800058401', 'CNES00800058444', 'CNES00800057597', 'CNES00800057923', 'CNES00800058911', 'CNES00800058550', 'CNES00800063029', 'CNES00800064664', 'CNES00800065173', 'CNES00800061817', 'CNES00800060938', 'CNES00800061360', 'CNES00800059054', 'CNES00800059187', 'CNES00800059000', 'CNES00800060680', 'CNES00800061362', 'CNES00800059468', 'CNES00800058889', 'CNES00800059646', 'CNES00800057721', 'CNES00800060289', 'CNES00800060487', 'CNES00800061421', 'CNES00800060267', 'CNES00800060555', 'CNES00800061359', 'CNES00800059660', 'CNES00800059535', 'CNES00800060040', 'CNES00800061144', 'CNES00800059534', 'CNES00800059941', 'CNES00800060503', 'CNES00800059298', 'CNES00800060631', 'CNES00800061214', 'CNES00800061106', 'CNES00800060467', 'CNES00800061808', 'CNES00800060655', 'CNES00800062206', 'CNES00800060935', 'CNES00800057954', 'CNES00800059447', 'CNES00800059237', 'CNES00800058274', 'CNES00800061022', 'CNES00800060051', 'CNES00800059971', 'CNES00800059473', 'CNES00800058593', 'CNES00800059599', 'CNES00800061526', 'CNES00800059751', 'CNES00800060944', 'CNES00800061819', 'CNES00800060066', 'CNES00800061623', 'CNES00800060759', 'CNES00800061310', 'CNES00800063471', 'CNES00800062522', 'CNES00800060636', 'CNES00800061625', 'CNES00800059490', 'CNES00800058259', 'CNES00800061690', 'CNES00800063114', 'CNES00800061614', 'CNES00800062039', 'CNES00800062260', 'CNES00800062592', 'CNES00800062504', 'CNES00800063201', 'CNES00800061660', 'CNES00800060867', 'CNES00800059727', 'CNES00800061909', 'CNES00800059944', 'CNES00800059408', 'CNES00800060318', 'CNES00800058909', 'CNES00800059588', 'CNES00800060381', 'CNES00800059103', 'CNES00800060212', 'CNES00800060921', 'CNES00800059781', 'CNES00800060351', 'CNES00800059008', 'CNES00800061319', 'CNES00800060649', 'CNES00800058787', 'CNES00800059759', 'CNES00800061350', 'CNES00800058887', 'CNES00800059576', 'CNES00800059295', 'CNES00800060688', 'CNES00800061197', 'CNES00800058677', 'CNES00800061110', 'CNES00800060183', 'CNES00800060629', 'CNES00800060913', 'CNES00800061192', 'CNES00800058988', 'CNES00800059883', 'CNES00800059836', 'CNES00800061927', 'CNES00800057800', 'CNES00800052582', 'CNES00800061615', 'CNES00800061815', 'CNES00800062060', 'CNES00800060431', 'CNES00800059978', 'CNES00800061299', 'CNES00800064914', 'CNES00800061114', 'CNES00800060424', 'CNES00800059238', 'CNES00800060397', 'CNES00800061400', 'CNES00800061514', 'CNES00800061926', 'CNES00800059897', 'CNES00800059581', 'CNES00800059496', 'CNES00800059648', 'CNES00800060869', 'CNES00800060313', 'CNES00800061157', 'CNES00800058541', 'CNES00800061733', 'CNES00800060329', 'CNES00800061431', 'CNES00800060843', 'CNES00800060891', 'CNES00800060677', 'CNES00800061413', 'CNES00800059819', 'CNES00800060755', 'CNES00800060619', 'CNES00800060783', 'CNES00800061075', 'CNES00800061264', 'CNES00800060845', 'CNES00800061592', 'CNES00800060598', 'CNES00800061134', 'CNES00800058517', 'CNES00800060500', 'CNES00800060596', 'CNES00800060272', 'CNES00800059101', 'CNES00800061827', 'CNES00800061176', 'CNES00800059673', 'CNES00800059553', 'CNES00800064887', 'CNES00800064882', 'CNES00800065233', 'CNES00800063632', 'CNES00800064291', 'CNES00800065305', 'CNES00800064293', 'CNES00800057456', 'CNES00800058070', 'CNES00800056858', 'CNES00800058139', 'CNES00800058411', 'CNES00800057499', 'CNES00800058713', 'CNES00800057286', 'CNES00800057574', 'CNES00800057483', 'CNES00800056785', 'CNES00800057740', 'CNES00800058121', 'CNES00800057876', 'CNES00800058233', 'CNES00800058240', 'CNES00800058228', 'CNES00800056202', 'CNES00800058229', 'CNES00800054529', 'CNES00800057081', 'CNES00800058904', 'CNES00800058513',
+                          'CNES00800056297', 'CNES00800056729', 'CNES00800053891', 'CNES00800058097', 'CNES00800063315', 'CNES00800056536', 'CNES00800058727', 'CNES00800057583', 'CNES00800058033', 'CNES00800059028', 'CNES00800056826', 'CNES00800057138', 'CNES00800057734', 'CNES00800058017', 'CNES00800060437', 'CNES00800061290', 'CNES00800059272', 'CNES00800058998', 'CNES00800061838', 'CNES00800061562', 'CNES00800060408', 'CNES00800061004', 'CNES00800058604', 'CNES00800061341', 'CNES00800061617', 'CNES00800060606', 'CNES00800061427', 'CNES00800061607', 'CNES00800060461', 'CNES00800061182', 'CNES00800059451', 'CNES00800059780', 'CNES00800060696', 'CNES00800062084', 'CNES00800060389', 'CNES00800060079', 'CNES00800060549', 'CNES00800060172', 'CNES00800061035', 'CNES00800060676', 'CNES00800060504', 'CNES00800060574', 'CNES00800061068', 'CNES00800061211', 'CNES00800061204', 'CNES00800060599', 'CNES00800060510', 'CNES00800058480', 'CNES00800060418', 'CNES00800060265', 'CNES00800060417', 'CNES00800055586', 'CNES00800060945', 'CNES00800064681', 'CNES00800060918', 'CNES00800064172', 'CNES00800059969', 'CNES00800062245', 'CNES00800059467', 'CNES00800059200', 'CNES00800060286', 'CNES00800061387', 'CNES00800058687', 'CNES00800060274', 'CNES00800060632', 'CNES00800061280', 'CNES00800060440', 'CNES00800060904', 'CNES00800059145', 'CNES00800058924', 'CNES00800057986', 'CNES00800053042', 'CNES00800057412', 'CNES00800056442', 'CNES00800057372', 'CNES00800057060', 'CNES00800056589', 'CNES00800057339', 'CNES00800058239', 'CNES00800058424', 'CNES00800055794', 'CNES00800059108', 'CNES00800060463', 'CNES00800059665', 'CNES00800059080', 'CNES00800057783', 'CNES00800059205', 'CNES00800058936', 'CNES00800060725', 'CNES00800057973', 'CNES00800060889', 'CNES00800058232', 'CNES00800060264', 'CNES00800060777', 'CNES00800064259', 'CNES00800059963', 'CNES00800060315', 'CNES00800060796', 'CNES00800058771', 'CNES00800059793', 'CNES00800061297', 'CNES00800061043', 'CNES00800060459', 'CNES00800061186', 'CNES00800057099', 'CNES00800059572', 'CNES00800059796', 'CNES00800060652', 'CNES00800060642', 'CNES00800061561', 'CNES00800061240', 'CNES00800061737', 'CNES00800059747', 'CNES00800060823', 'CNES00800061243', 'CNES00800059465', 'CNES00800060194', 'CNES00800061199', 'CNES00800057438', 'CNES00800059979', 'CNES00800060971', 'CNES00800061066', 'CNES00800061452', 'CNES00800062080', 'CNES00800060926', 'CNES00800061849', 'CNES00800059209', 'CNES00800061342', 'CNES00800060943', 'CNES00800058801', 'CNES00800059531', 'CNES00800060149', 'CNES00800060050', 'CNES00800059842', 'CNES00800060907', 'CNES00800060526', 'CNES00800062026', 'CNES00800057990', 'CNES00800058155', 'CNES00800060771', 'CNES00800061010', 'CNES00800058882', 'CNES00800060238', 'CNES00800058990', 'CNES00800060662', 'CNES00800059466', 'CNES00800058830', 'CNES00800059274', 'CNES00800058477', 'CNES00800057308', 'CNES00800059612', 'CNES00800060214', 'CNES00800059606', 'CNES00800058862', 'CNES00800059057', 'CNES00800059075', 'CNES00800058745', 'CNES00800060180', 'CNES00800059628', 'CNES00800059435', 'CNES00800060255', 'CNES00800061408', 'CNES00800059808', 'CNES00800056451', 'CNES00800058059', 'CNES00800059720', 'CNES00800058993', 'CNES00800059530', 'CNES00800060787', 'CNES00800059273', 'CNES00800059760', 'CNES00800059189', 'CNES00800058733', 'CNES00800058852', 'CNES00800061172', 'CNES00800059666', 'CNES00800058979', 'CNES00800059705', 'CNES00800058989', 'CNES00800059526', 'CNES00800059173', 'CNES00800059426', 'CNES00800060124', 'CNES00800059457', 'CNES00800059182', 'CNES00800060879', 'CNES00800059241', 'CNES00800061069', 'CNES00800062684', 'CNES00800061028', 'CNES00800060699', 'CNES00800058967', 'CNES00800060402', 'CNES00800057329', 'CNES00800058479', 'CNES00800060769', 'CNES00800059440', 'CNES00800058947', 'CNES00800061321', 'CNES00800060032', 'CNES00800061320', 'CNES00800059436', 'CNES00800056911', 'CNES00800059522', 'CNES00800061126', 'CNES00800059609', 'CNES00800059567', 'CNES00800059831', 'CNES00800061426', 'CNES00800061425', 'CNES00800060126', 'CNES00800060930', 'CNES00800060481', 'CNES00800061441', 'CNES00800059263', 'CNES00800061076', 'CNES00800059515', 'CNES00800058148', 'CNES00800060223', 'CNES00800058794', 'CNES00800056652', 'CNES00800058579', 'CNES00800061070', 'CNES00800060357', 'CNES00800059569', 'CNES00800059137', 'CNES00800061024', 'CNES00800058790', 'CNES00800061423')
+AND psc.location = 'IN_ROUTED_BIN'
+GROUP BY 1;
+
+-- admissions weekly V2
+SELECT
+    right(YEARWEEK(admission_date_new,1),2) as week,
+    COUNT(distinct p_admission.parcel_id)                                                                          as n_admissions
+FROM  (
+          select distinct plc.parcel_id, p.client_id, p.tracking_number, p.state, p.state_update_time, p.city_code,
+                          date(min(plc.changed_at)) as admission_date,
+                          IF(date(min(plc.changed_at)) = date(min(psc.changed_at)) AND psc.state IN ('PICKED'),min(plc.changed_at),date_add(min(plc.changed_at),interval 1 day)) as admission_date_new
+          from parcel_location_changes as plc
+                   left join parcel_state_changes psc on psc.id=plc.parcel_id
+                   INNER JOIN parcels as p ON plc.parcel_id = p.id
+          where
+            --  plc.action='ADMISSION_SCAN'
+                  plc.location not in ('NOT_ADMITTED')
+            and plc.changed_at > DATE_SUB(NOW(), INTERVAL 6 WEEK)
+          group by 1,2,3,4,5
+      ) as p_admission
+-- WHERE city_code IS NOT NULL
+GROUP BY 1
+
+-- admissions monthly V2
+SELECT
+    date_format(admission_date_new,'%Y-%m') as month,
+    COUNT(distinct p_admission.parcel_id)                                                                          as n_admissions
+FROM  (
+          select distinct plc.parcel_id, p.client_id, p.tracking_number, p.state, p.state_update_time, p.city_code,
+                          date(min(plc.changed_at)) as admission_date,
+                          IF(date(min(plc.changed_at)) = date(min(psc.changed_at)) AND psc.state IN ('PICKED'),min(plc.changed_at),date_add(min(plc.changed_at),interval 1 day)) as admission_date_new
+          from parcel_location_changes as plc
+                   left join parcel_state_changes psc on psc.id=plc.parcel_id
+                   INNER JOIN parcels as p ON plc.parcel_id = p.id
+          where
+            --  plc.action='ADMISSION_SCAN'
+                  plc.location not in ('NOT_ADMITTED')
+            and plc.changed_at > DATE_SUB(NOW(), INTERVAL 2 MONTH)
+          group by 1,2,3,4,5
+      ) as p_admission
+WHERE date_format(admission_date_new,'%Y-%m-%d') <= '2021-09-19'
+GROUP BY 1;
+
+
+SELECT * FROM parcel_state_changes;
+
+
+-- Operative Admissions
+select month(admission_day) as admission_month
+     , week(admission_day - interval 1 day) as admission_week
+     , admission_day
+     , client_code as partner_name
+     , ifnull(city_code,'_No city_code_') as city_code
+     , country_code
+     , COUNT(distinct tracking_number)    as n_operative_admissions
+FROM (
+         SELECT p.city_code
+              , p.tracking_number
+              , cc.client_code
+              , co.country_code
+              , date(min(changed_at - INTERVAL 6 HOUR)) AS admission_day
+         FROM parcel_location_changes plc
+                  INNER JOIN parcels p ON plc.parcel_id = p.id and p.package_id not like '%test%' and p.package_id not like '%GLOVO%' and p.package_id not like '%TeK%'
+                  LEFT JOIN recipient_addresses ra on p.id = ra.parcel_id
+                  INNER JOIN client_configs as cc on cc.glovo_client_id=p.client_id
+                  left join city_configs as ci on p.city_code = ci.city_code
+                  left join country_configs as co on co.id = ci.country_config_id
+                  left join (
+             select parcel_id
+                  , tracking_number
+                  , psc.state
+                  , date(min(changed_at)) as manifest_received_date
+             from parcel_state_changes as psc
+                      left join parcels as p on psc.parcel_id = p.id
+             where psc.state='CREATED'
+             group by 1,2,3    ) as manifest on manifest.parcel_id=plc.parcel_id
+         WHERE plc.location not in ('NOT_ADMITTED') and date(changed_at)>=manifest_received_date
+         GROUP BY 1,2,3,4) as admission
+GROUP BY 1,2,3,4,5,6;
+
+SELECT * FROM parcels
+ORDER BY creation_time DESC
+LIMIT 10;
+
+SELECT
+    tracking_number,
+    admission_date as admission_date_physic,
+    ifnull(p_admission.city_code,'_No city_code_') as city,
+    concat(ifnull(p_admission.city_code,'_No city_code_'),right(YEARWEEK(admission_date_new,1),2)) as concat,
+    sum(pricing) as total_revenue
+
+FROM  (
+          select distinct plc.parcel_id, p.client_id, p.tracking_number, p.state, p.state_update_time, p.city_code, weight,
+                          IF(weight<=2,2.4,IF(weight>2 and weight<=3,2.77,IF(weight>3 and weight<=4,2.98, IF(weight>4 and weight<=5,3.03,IF(weight>5 and weight<=12 or weight is null,4.27,4.27+(0.2*(weight-12))))))) as pricing,
+                          date(min(plc.changed_at)) as admission_date,
+                          IF(date(min(plc.changed_at)) = date(min(psc.changed_at)) AND psc.state IN ('PICKED'),min(plc.changed_at),date_add(min(plc.changed_at),interval 1 day)) as admission_date_new
+          from parcel_location_changes as plc
+                   left join parcel_state_changes psc on psc.id=plc.parcel_id
+                   INNER JOIN parcels as p ON plc.parcel_id = p.id
+          where -- plc.action='ADMISSION_SCAN'
+                  plc.location not in ('NOT_ADMITTED')
+            and plc.changed_at >= DATE_SUB(NOW(), INTERVAL 7 WEEK)
+            and client_id=61593392
+          group by 1,2,3,4,5
+      ) as p_admission
+where admission_date>='2021-08-01'
+GROUP BY 1,2,3;
+
+SELECT * FROM parcels
+WHERE tracking_number IN (71020279, 71021830, 71021875, 71025361, 71026807, 71026810, 71028867, 71032081, 71032303, 71032384, 71032437, 71032467, 71032511, 71032684, 71032690, 71032718, 71032862, 71041147)
+AND weight IS NULL;
+
+select
+    day,
+    tracking_number,
+    state,
+    original_service,
+    real_service,
+    pricing_same_day_next_day_postal_code,
+    weekend_pricing,
+    postal_code,
+    IF(left(postal_code,1)=4,'OPO',IF((left(postal_code,1)=1 or left(postal_code,1)=2),'LIS','')) as city_code_zip_code,
+    description,
+    package_id
+
+
+from (select
+          r1.tracking_number,
+          left(postal_code,4) as postal_code,
+          right(YEARWEEK(state_update_time,1),2) as week,
+          date(min_created) as day,
+          parcels.state,
+          description,
+          package_id,
+          dayname(state_update_time) as day_name,
+          datediff(min_created,date(state_update_time)) as date_dif,
+          IF((parcels.volumetric_weight in (2,3,5)) or (parcels.volumetric_weight is null) ,'SAME_DAY','NEXT_DAY') as original_service,
+          IF(r1.tracking_number in ('GLOVODECPT1053105717','GLOVODECPT3902158418','GLOVODECPT4337490440','GLOVODECPT5737551348'),'SAME_DAY',IF(datediff(min_created,date(state_update_time))=0,'SAME_DAY','NEXT_DAY')) as real_service,
+          IF((parcels.volumetric_weight  in (2,3,5)) or (parcels.volumetric_weight is null),IF(((left(postal_code,4)) between 4000 and 4200) or (left(postal_code,4) in (1000,1001,1002,1006,1007,1008,1009,1011,1012,1013,1016,1017,1019,1032,1048,1049,1050,1051,1052,1053,1054,1056,1057,1058,1059,1061,1062,1063,1064,1066,1067,1068,1069,1070,1071,1072,1074,1081,1092,1098,1099,1100,1101,1102,1103,1104,1106,1107,1108,1109,1111,1112,1113,1114,1116,1117,1118,1119,1121,1122,1123,1124,1125,1126,1127,1128,1129,1131,1132,1133,1134,1136,1137,1138,1139,1141,1142,1143,1144,1146,1147,1149,1150,1151,1166,1167,1169,1170,1171,1199,1200,1201,1208,1209,1245,1249,1250,1251,1269,1300,1301,1302,1303,1349,1350,1351,1399,1400,1401,1449,1495,1496,1499,1500,1501,1502,1503,1504,1506,1507,1511,1512,1513,1514,1516,1549,1600,1601,1649,1675,1676,1679,1685,1686,1689,1700,1701,1702,1703,1704,1706,1707,1708,1709,1711,1712,1713,1721,1748,1749,1750,1751,1769,1800,1801,1802,1803,1804,1806,1807,1808,1811,1849,1881,1885,1886,1889,1900,1901,1906,1911,1949,1950,1951,1959,1990,1991,1998,1999,2605,2609,2610,2614,2620,2621,2625,2626,2628,2629,2635,2636,2639,2645,2646,2649,2650,2654,2660,2664,2674,2675,2680,2681,2685,2688,2689,2690,2691,2694,2695,2699,2700,2704,2714,2719,2720,2724,2725,2729,2730,2734,2735,2736,2739,2740,2744,2745,2746,2749,2750,2751,2754,2755,2756,2759,2760,2761,2765,2766,2769,2770,2774,2775,2779,2780,2784,2785,2789,2790,2794,2795,2799,2800,2801,2804,2805,2806,2809,2810,2811,2814,2815,2816,2819,2820,2821,2824,2825,2826,2829,2841,2844,2845,2845,2846,2849,2855,2856,2859,2865,2866,2869,2870,2871,2874,2890,2891,2894)), 4 ,IF((left(postal_code,4)) in (4249,4250,4269,4300,4349,4350,4369,4435,4460,4450,4454,4455,4464,4465,4425,4470,4440,4475,4404,4434,4400,4409,4405,4414,4430),4,IF((left(postal_code,4)) in (4420,4424,4510,4515,4445,4410,4415),4.6,IF((left(postal_code,4)) in (4500),5.2,5.2)))),2.7) as pricing_same_day_next_day_postal_code,
+          IF(dayname(state_update_time) IN ('Saturday','Sunday'),1,0) as weekend_pricing
+
+      from parcels
+               LEFT JOIN (
+          SELECT tracking_number,
+                 p.id as parcel_id,
+                 psc.state,
+                 date(min(changed_at)) as min_created,
+                 changed_at,
+                 volumetric_weight
+          FROM parcel_state_changes psc
+                   LEFT JOIN parcels p ON psc.parcel_id = p.id
+          WHERE psc.state = 'CREATED'
+            and client_id=58541307
+            AND p.tracking_number not in ('GLOVODECPT8070950958','GLOVODECPT2155978816','GLOVODECPT4319385668','GLOVODECPT2155978816','GLOVODECPT2533351967','GLOVODECPT6036117598','GLOVODECPT7841084243','GLOVODECPT6276395692','GLOVODECPT7030477906','GLOVODECPT0442309910','GLOVODECPT1400691809','GLOVODECPT6322092968','GLOVODECPT3469141969','GLOVODECPT8546032441','GLOVODECPT4242696432')
+          group by 1,2,3) r1 ON r1.parcel_id = parcels.id
+               LEFT JOIN recipient_addresses ra on parcels.id = ra.parcel_id
+      where client_id=58541307
+        and parcels.state in ('DELIVERED','PICKED','NOT_DELIVERED_NOT_RETURNED','OUT_OF_SERVICE_AREA','COORDINATES_FAILURE')
+        AND package_id not like '%test%'
+      group by 1,2,3) subpricing_table
+where day >='2021-08-01'
+group by 1,2;
+
+SELECT * FROM parcels
+WHERE tracking_number = 71021589;
+
+SELECT
+    c.country_code,
+    cs.city_code,
+    c.city_name,
+    cs.crossdocking_order_cash_enabled
+
+FROM city_cash_settings cs
+         JOIN cities c ON cs.city_code=c.city_code
+
+WHERE c.country_code IN ('IT','ES','RO','BG','GE','PT','NG')
+ORDER BY 1,3;
+
+SELECT * FROM city_configs
+LIMIT 10;
+
+SELECT * FROM parcels
+LIMIT 10;
+
+SELECT opp.client_name,
+       opp.creation_time,
+       opp.country_code,
+       p.glovo_client_id,
+       opp.total_orders
+FROM(SELECT partners.client_name,
+       partners.creation_time,
+       partners.country_code,
+       COUNT(DISTINCT parcels.id) as total_orders
+FROM partners
+LEFT JOIN parcels ON partners.glovo_client_id = parcels.client_id
+WHERE partners.creation_time >= '2022-10-01'
+GROUP BY 1,2,3
+ORDER BY 1,2,3) as opp
+LEFT JOIN partners p ON opp.client_name = p.client_name
+WHERE opp.total_orders = 0
+GROUP BY 1,3;
+
+SELECT p.package_id,
+       p.tracking_number,
+       ppd.formatted_address
+FROM parcels p
+INNER JOIN parcel_pickup_details ppd on p.id = ppd.parcel_id
+WHERE 1=1
+AND p.client_id = 116659495
+AND p.creation_time >= '2023-04-16'
+AND p.creation_time < '2023-05-16'
