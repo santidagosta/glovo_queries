@@ -1,0 +1,260 @@
+with number_downloads as
+         (SELECT TO_CHAR(DATE_TRUNC('month', downloads.creation_time), 'YYYY-MM-DD') AS download_time,
+                 upper(downloads.country)                                            as countryd,
+                 COUNT(*)                                                            AS downloads_count
+          FROM public.ext_adjust_installs AS downloads
+          GROUP BY download_time, countryd),
+     number_signups as
+         (SELECT TO_CHAR(DATE_TRUNC('month', users.registration_date), 'YYYY-MM-DD') AS users_registration_month,
+                 geography.country_code                                              as countryns,
+                 COUNT(DISTINCT users.id)                                            AS users_count
+          FROM public.users AS users
+                   LEFT JOIN public.geography AS geography ON users.preferred_city_code = geography.code
+          WHERE (users.deleted = 0)
+          GROUP BY users_registration_month
+                 , countryns
+         ),
+     active_customers as
+         (SELECT TO_CHAR(DATE_TRUNC('month', orders.activation_time_local), 'YYYY-MM-DD') as month1,
+                 orders.country_code                                                      as countryac,
+                 COUNT(DISTINCT orders.customer_id)                                       as number_of_active_customers
+          FROM orders
+          WHERE deleted = False
+            AND final_status = 'DeliveredStatus'
+          GROUP BY month1
+                 , countryac),
+     newnew_newrecurrent as
+         (SELECT TO_CHAR(DATE_TRUNC('month', orders.activation_time_local), 'YYYY-MM-DD') as month,
+                 orders.country_code                                                      as countrynn,
+                 count(distinct CASE
+                                    WHEN DATE_TRUNC('month', users.registration_date_local) =
+                                         DATE_TRUNC('month', orders.activation_time_local)
+                                        THEN orders.customer_id
+                                    ELSE NULL
+                     END)                                                                 as new_user_and_new_customers,
+                 count(distinct CASE
+                                    WHEN DATE_TRUNC('month', users.registration_date_local) <
+                                         DATE_TRUNC('month', orders.activation_time_local)
+                                        THEN orders.customer_id
+                                    ELSE NULL
+                     END)                                                                 as old_user_and_new_customers
+          FROM orders
+                   JOIN users on orders.customer_id = users.id
+          WHERE orders.deleted = FALSE
+            AND orders.first_order = TRUE
+          GROUP BY month
+                 , countrynn),
+
+     customers_and_orders as (WITH user_accounting_derived AS (with orders_per_period as (
+         select distinct date_trunc('month', orders.activation_time_local) as date,
+                         orders.country_code                               as countryname,
+                         orders.customer_id,
+                         users.registration_date_local                     as customer_registration_date,
+                         max(orders.first_order::int)::bool                as is_new_customer,
+                         count(distinct orders.id)                         as number_of_orders
+
+         from orders
+                  JOIN
+              users ON users.id = orders.customer_id
+         WHERE orders.final_status = 'DeliveredStatus'
+           and orders.deleted = False
+         group by 1
+                , 2
+                , 3
+                , 4
+     )
+                                                                  , general as (
+             select *,
+                    LAG(opp.date, 1) OVER (PARTITION BY customer_id ORDER BY opp.date ASC) as last_active_period,
+                    datediff('month', LAG(opp.date, 1) OVER (PARTITION BY customer_id ORDER BY opp.date ASC),
+                             opp.date)                                                     as time_death
+             from orders_per_period as opp
+         )
+                                                               SELECT a.*, total.cumulative_new_customers as total
+
+                                                               FROM (select distinct nvl(this_period.countryname, last_period.countryname)             as country4,
+                                                                                     --this_period.customer_id as customer_id,
+                                                                                     nvl(this_period.date, dateadd(month, 1, last_period.date))        as date,
+                                                                                     sum(case when this_period.is_new_customer then 1 else 0 end)      as nc,
+                                                                                     sum(case
+                                                                                             when (this_period.is_new_customer AND
+                                                                                                   this_period.date =
+                                                                                                   date_trunc('month', this_period.customer_registration_date))
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as new_register_nc,
+                                                                                     sum(case
+                                                                                             when (this_period.is_new_customer AND
+                                                                                                   this_period.date >
+                                                                                                   date_trunc('month', this_period.customer_registration_date))
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as old_register_nc,
+                                                                                     sum(case
+                                                                                             when this_period.date is not null and
+                                                                                                  not this_period.is_new_customer and
+                                                                                                  last_period.date is not null and
+                                                                                                  last_period.is_new_customer
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as recurrent_nc,
+                                                                                     sum(case
+                                                                                             when this_period.date is not null and
+                                                                                                  not this_period.is_new_customer and
+                                                                                                  last_period.date is not null and
+                                                                                                  not last_period.is_new_customer
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as recurrent_rc,
+                                                                                     sum(case
+                                                                                             when this_period.date is null and
+                                                                                                  last_period.date is not null and
+                                                                                                  last_period.is_new_customer
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as churned_nc,
+                                                                                     sum(case
+                                                                                             when this_period.date is null and
+                                                                                                  last_period.date is not null and
+                                                                                                  not last_period.is_new_customer
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as churned_rc,
+                                                                                     sum(case
+                                                                                             when this_period.date is not null and
+                                                                                                  not this_period.is_new_customer and
+                                                                                                  last_period.date is null
+                                                                                                 then 1
+                                                                                             else 0 end)                                               as reactivated,
+                                                                                     sum(case when this_period.time_death >= 3.5 then 1 else null end) as resurrected,
+                                                                                     sum(case
+                                                                                             when this_period.is_new_customer
+                                                                                                 then this_period.number_of_orders
+                                                                                             else 0 end)                                               as orders_nc,
+                                                                                     count(distinct case
+                                                                                                        when this_period.is_new_customer or last_period.date is not null
+                                                                                                            then nvl(this_period.customer_id, last_period.customer_id)
+                                                                                                        else 0 end)                                    as alive,
+                                                                                     sum(case
+                                                                                             when this_period.date is not null and
+                                                                                                  not this_period.is_new_customer and
+                                                                                                  last_period.date is not null and
+                                                                                                  last_period.is_new_customer
+                                                                                                 then this_period.number_of_orders
+                                                                                             else 0 end)                                               as orders_recurrent_nc,
+                                                                                     sum(case
+                                                                                             when this_period.date is not null and
+                                                                                                  not this_period.is_new_customer and
+                                                                                                  last_period.date is not null and
+                                                                                                  not last_period.is_new_customer
+                                                                                                 then this_period.number_of_orders
+                                                                                             else 0 end)                                               as orders_recurrent_rc,
+                                                                                     sum(case
+                                                                                             when this_period.date is null and
+                                                                                                  last_period.date is not null and
+                                                                                                  last_period.is_new_customer
+                                                                                                 then this_period.number_of_orders
+                                                                                             else 0 end)                                               as orders_churned_nc,
+                                                                                     sum(case
+                                                                                             when this_period.date is null and
+                                                                                                  last_period.date is not null and
+                                                                                                  not last_period.is_new_customer
+                                                                                                 then this_period.number_of_orders
+                                                                                             else 0 end)                                               as orders_churned_rc,
+                                                                                     sum(case
+                                                                                             when this_period.date is not null and
+                                                                                                  not this_period.is_new_customer and
+                                                                                                  last_period.date is null
+                                                                                                 then this_period.number_of_orders
+                                                                                             else 0 end)                                               as orders_reactivated
+
+                                                                     from general this_period
+                                                                              full outer join
+                                                                          general last_period
+                                                                          on this_period.customer_id = last_period.customer_id and
+                                                                             last_period.date = dateadd(month, -1, this_period.date) and
+                                                                             this_period.countryname = last_period.countryname
+                                                                     where 1 = 1 -- no filter on 'user_accounting_derived.filter_date'
+
+                                                                     group by 1
+                                                                            , 2
+                                                                    ) as a
+
+                                                                        LEFT JOIN (
+                                                                   select date_trunc('month', activation_time_local)                                          as date,
+                                                                          o.country_code                                                                      as countrycode2,
+                                                                          COUNT(DISTINCT case when first_order THEN customer_id ELSE null END)                as new_customer,
+                                                                          SUM(
+                                                                          COUNT(DISTINCT case when first_order THEN customer_id ELSE null END))
+                                                                          OVER (ORDER BY date_trunc('month', activation_time_local) ROWS UNBOUNDED PRECEDING) AS cumulative_new_customers
+                                                                   from orders as o
+                                                                   where final_status = 'DeliveredStatus'
+                                                                     and deleted = False
+                                                                   group by 1
+                                                                          , 2
+                                                               ) as total
+                                                                                  on total.date = a.date
+                                                                                      and
+                                                                                     total.countrycode2 = a.country4)
+                              SELECT country4                                                      as "countrytest",
+                                     to_char(date_trunc('month', user_accounting_derived.date),
+                                             'YYYY-MM-DD')                                         AS "user_accounting_derived.date",
+                                     COALESCE(SUM(user_accounting_derived.nc), 0)                  AS "user_accounting_derived.nc",
+                                     COALESCE(SUM(user_accounting_derived.recurrent_nc), 0)        AS "user_accounting_derived.recurrent_nc",
+                                     COALESCE(SUM(user_accounting_derived.recurrent_rc), 0)        AS "user_accounting_derived.recurrent_rc",
+                                     COALESCE(SUM(user_accounting_derived.reactivated), 0)         AS "user_accounting_derived.reactivated",
+                                     COALESCE(SUM(user_accounting_derived.churned_nc), 0)          AS "user_accounting_derived.churned_nc",
+                                     COALESCE(SUM(user_accounting_derived.churned_rc), 0)          AS "user_accounting_derived.churned_rc",
+                                     COALESCE(SUM(user_accounting_derived.orders_nc), 0)           AS "user_accounting_derived.orders_nc",
+                                     COALESCE(SUM(user_accounting_derived.orders_recurrent_nc), 0) AS "user_accounting_derived.orders_recurrent_nc",
+                                     COALESCE(SUM(user_accounting_derived.orders_reactivated), 0)  AS "user_accounting_derived.orders_reactivated",
+                                     COALESCE(SUM(user_accounting_derived.orders_recurrent_rc), 0) AS "user_accounting_derived.orders_recurrent_rc"
+                              FROM user_accounting_derived
+
+                              GROUP BY 1, 2
+                              order by 1, 2
+     ),
+     trampa as (
+         select *
+         from ((((number_signups
+             full join active_customers on users_registration_month = month1
+                 and countryns = countryac)
+             full join newnew_newrecurrent on users_registration_month = month
+                 and countryns = countrynn)
+             full join customers_and_orders on users_registration_month = "user_accounting_derived.date"
+                 and countryns = countrytest)
+                  full join number_downloads on users_registration_month = download_time
+             and countryns = countryd)
+
+         order by 1, 2
+     ),
+     final_db as (select countrytest                                                                            as country,
+                         users_registration_month,
+                         downloads_count,
+                         users_count,
+                         number_of_active_customers,
+                         new_user_and_new_customers,
+                         old_user_and_new_customers,
+                         "user_accounting_derived.nc",
+                         "user_accounting_derived.recurrent_nc",
+                         "user_accounting_derived.recurrent_rc",
+                         "user_accounting_derived.reactivated",
+                         "user_accounting_derived.churned_nc",
+                         "user_accounting_derived.churned_rc",
+                         "user_accounting_derived.orders_nc",
+                         "user_accounting_derived.orders_recurrent_nc",
+                         "user_accounting_derived.orders_reactivated",
+                         "user_accounting_derived.orders_recurrent_rc",
+                         SUM(users_count)
+                         OVER (PARTITION BY country ORDER BY users_registration_month ROWS unbounded preceding) AS cum_users,
+                         cum_users -
+                         ("user_accounting_derived.nc" + "user_accounting_derived.recurrent_nc" +
+                          "user_accounting_derived.recurrent_rc" +
+                          "user_accounting_derived.reactivated")                                                AS non_ordering_users,
+                         SUM("user_accounting_derived.nc")
+                         OVER (PARTITION BY country ORDER BY users_registration_month ROWS unbounded preceding) AS cum_customers,
+                         cum_users - cum_customers                                                              AS dormant_signups,
+                         non_ordering_users - dormant_signups                                                   AS cum_lapsed_customer
+                  from trampa
+                  where (users_registration_month IS NOT NULL)
+                    AND (number_of_active_customers IS NOT NULL)
+                    and month1 IS NOT NULL
+                  order by 1
+                         , 2)
+select fdb.*
+from final_db fdb
+order by 1, 2;
